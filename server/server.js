@@ -6,7 +6,7 @@ const Dao = require('./modules/data-access/data-access')
 const dao = new Dao()
 
 app.get('/rest/api/users/get/', async (req, res) => {
-    let result = await dao.find("users")
+    let result = await dao.find("users", {name:'kuldeep'})
     res.send(result)
 })
 
@@ -25,7 +25,7 @@ app.post('/rest/api/users/add', async (req, res) => {
     try {
         result = await dao.insert("users")
     }
-    catch {
+    catch (err){
         result = {error:"err"}
     }
     res.send(result)

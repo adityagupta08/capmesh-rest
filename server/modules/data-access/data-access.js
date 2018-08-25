@@ -46,6 +46,24 @@ class Dao {
         }
     }
 
+    async aggregate(collection, query) {
+        if (query == undefined)
+            query = []
+        let mongo = await mongoClient.connect(URL, { useNewUrlParser: true })
+        let result
+        try {
+            let db = mongo.db('capmesh')
+            result = (await db.collection(collection).aggregate(query).toArray())
+            return result
+        }
+        catch (err) {
+            throw err
+        }
+        finally {
+            mongo.close()
+        }
+    }
+
     async update(collection, query, newValues) {
         if (newValues == undefined || newValues == {})
             throw "Object is Empty"
