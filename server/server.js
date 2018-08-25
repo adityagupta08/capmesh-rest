@@ -2,11 +2,11 @@ const express = require('express')
 const app = express()
 
 const Dao = require('./modules/data-access/data-access')
-
 const dao = new Dao()
 
+
 app.get('/rest/api/users/get/', async (req, res) => {
-    let result = await dao.find("users", {name:'kuldeep'})
+    let result = await dao.find("users")
     res.send(result)
 })
 
@@ -16,8 +16,8 @@ app.post('/rest/api/users/add', async (req, res) => {
         name: 'soumya',
         email: 'soumyaN@hotmail.com',
         mobile: '9123876903',
-        gender: 'F', dateOfBirth:
-            new Date("1996-07-01"),
+        gender: 'F', 
+        dateOfBirth:new Date("1996-07-01"),
         isVerified: false,
         isDeleted: false
     }
@@ -25,8 +25,8 @@ app.post('/rest/api/users/add', async (req, res) => {
     try {
         result = await dao.insert("users")
     }
-    catch (err){
-        result = {error:"err"}
+    catch (err) {
+        result = { error: "err" }
     }
     res.send(result)
 })
@@ -39,10 +39,10 @@ app.delete('/rest/api/users/delete/', async (req, res) => {
 app.patch('/rest/api/users/update/', async (req, res) => {
     let result
     try {
-        result = await dao.update("users",{ name: 'soumya' },{$set:{name:"Soumya"}})
-    } 
+        result = await dao.update("users", { name: 'soumya' }, { $set: { name: "Soumya" } })
+    }
     catch (err) {
-        result = {err:err}
+        result = { err: err }
     }
     res.send(result)
 })

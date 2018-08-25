@@ -70,4 +70,5 @@ typings/
 .vuepress/dist
 
 # Serverless directories
-.serverless
+.serverless"sendgrid.env" 
+"sendgrid.env" 

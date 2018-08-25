@@ -20,6 +20,8 @@
   },
   "homepage": "https://github.com/hsagarthegr8/capmesh-rest#readme",
   "dependencies": {
+    "@sendgrid/mail": "^6.3.1",
+    "body-parser": "^1.18.3",
     "express": "^4.16.3",
     "mongodb": "^3.1.3"
   },
