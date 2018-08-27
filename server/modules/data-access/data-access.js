@@ -6,7 +6,7 @@
  */
 
 const mongoClient = require('mongodb')
-const URL = 'mongodb://localhost:27017/'
+const URL = 'mongodb://10.102.55.71:27017/'
 
 class Dao {
     
