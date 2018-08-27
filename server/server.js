@@ -654,6 +654,102 @@ app.get('/rest/api/users/countConnection/:un', async (req, res) => {
     res.send(result);
 });
 
+
+//-----------------Account Management-------------------//
+
+const UserManagement = require('./modules/user-management/user_management')
+const OrganizationManagement = require('./modules/organization-management/organization-management')
+const Session = require('./modules/user-management/session')
+//const dao = new Dao()
+const user = new UserManagement()
+const orgs = new OrganizationManagement()
+const sessManager = new Session()
+
+/*********************user signup***********************/
+app.get('/rest/api/users/get/', async (req, res) => {
+    let result = await user.findAll();
+    res.send(result)
+})
+app.use(parser.json());
+//method on clicking signUp 
+app.post('/rest/api/users/add', async (req, res) => {
+    let authData = await user.authInsert(req.body);
+    let result = await user.signupInsert(req.body);
+    let verifyUser = await user.verifyInsert(req.body);
+    res.send(result);
+})
+//after activating the link
+app.delete('/rest/api/users/activate/:userName/:link', async (req, res) => {
+    let result = await user.deleteVerifiedUser(req.params)
+    res.send(result)
+})
+
+//updated link for verification
+app.patch('/rest/api/users/updateVerificationLink', async (req, res) => {
+    let result = await user.updateVerifyLink(req.body)
+    res.send(result)
+})
+
+/*********************organization signup***********************/
+app.get('/rest/api/orgs/get/', async (req, res) => {
+    let result = await orgs.findAll();
+    res.send(result)
+})
+app.use(parser.json());
+//method on clicking signUp 
+app.post('/rest/api/orgs/add', async (req, res) => {
+    let authData = await orgs.authInsert(req.body);
+    let result = await orgs.signupInsert(req.body);
+    let verifyUser = await orgs.verifyInsert(req.body);
+    res.send(verifyUser)
+})
+//after activating the link
+app.delete('/rest/api/orgs/activate/:companyID/:link', async (req, res) => {
+    let result = await orgs.deleteVerifiedUser(req.params)
+    res.send(result)
+})
+
+//updated link for verification
+app.patch('/rest/api/orgs/updateVerificationLink', async (req, res) => {
+    let result = await orgs.updateVerifyLink(req.body)
+    res.send(result)
+})
+
+
+
+/*********************login***********************/
+/*********************users**********************/
+//method on clicking loginIn
+app.post('/rest/api/users/signin', async (req, res) => {
+    let result = await user.signin(req.body);
+    res.send(result);
+})
+//method on clicking forgot password
+app.post('/rest/api/users/password', async (req, res) => {
+    let result = await user.forgotPassword(req.body);
+    res.send(result)
+})
+//method to update new Password
+app.post('/rest/api/users/changepassword', async (req, res) => {
+    let result = await user.changePassword(req.body);
+    res.send(result)
+})
+/****************************org**************************/
+//method on clicking loginIn
+app.post('/rest/api/orgs/signin', async (req, res) => {
+    let result = await orgs.signin(req.body);
+    res.send(result);
+})
+//method on clicking forgot password
+app.post('/rest/api/orgs/password', async (req, res) => {
+    let result = await orgs.forgotPassword(req.body);
+    res.send(result)
+})
+//method to update new Password
+app.post('/rest/api/orgs/changepassword', async (req, res) => {
+    let result = await orgs.changePassword(req.body);
+    res.send(result)
+})
 //-------------------------END-----------------------------//
 
 app.listen('8080', () => console.log('Listening on port 8080'));

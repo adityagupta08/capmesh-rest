@@ -22,7 +22,4 @@ class Utils {
 
 }
 
-utils = new Utils() 
-console.log(utils.encryptPassword("hsagarthegr8"))
-
-console.log(utils.generateVerificationLink())
+module.exports = Utils

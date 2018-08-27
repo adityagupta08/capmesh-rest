@@ -45,6 +45,7 @@ class SessionManager {
      */
     resetUser(req) {
         delete req.session.user
+    }
 }
 
-module.exports = Session
+module.exports = SessionManager
