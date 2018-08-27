@@ -23,7 +23,7 @@ app.post('/rest/api/users/add', async (req, res) => {
     }
     let result
     try {
-        result = await dao.insert("users")
+        result = await dao.insert("users",obj)
     }
     catch (err) {
         result = { error: "err" }
