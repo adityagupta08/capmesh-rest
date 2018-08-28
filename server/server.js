@@ -534,7 +534,7 @@ const chats = new Chats();
   "content":"Hello"
 }*/
 
-app.post('/rest/api/chats/addChatsBetweenUsers', async (req, res) => {
+app.post('/rest-api/chats/addChatsBetweenUsers', async (req, res) => {
     let previousConversationStatus = await chats.conversationExist(req.body);
     if (previousConversationStatus) {
         var result = await chats.addMessageInConversation(req.body);
@@ -553,7 +553,7 @@ app.post('/rest/api/chats/addChatsBetweenUsers', async (req, res) => {
   "user2":102
 }*/
 
-app.post('/rest/api/chats/getchatsBetweenUsers', async (req, res) => {
+app.post('/rest-api/chats/getchatsBetweenUsers', async (req, res) => {
     let result = await chats.getChatsBetweenUsers(req.body)
     res.send(result)
 })
@@ -565,7 +565,7 @@ app.post('/rest/api/chats/getchatsBetweenUsers', async (req, res) => {
   "user2":102,
   "timestamp":
 }*/
-app.delete('/rest/api/chats/deleteSingleMessage', async (req, res) => {
+app.delete('/rest-api/chats/deleteSingleMessage', async (req, res) => {
     var result = await chats.deleteSingleMessage(req.body);
     console.log(result)
     res.send(result)
@@ -577,7 +577,7 @@ app.delete('/rest/api/chats/deleteSingleMessage', async (req, res) => {
 "user":103
 }*/
 
-app.post('/rest/api/chats/hasConversationsWith', async (req, res) => {
+app.post('/rest-api/chats/hasConversationsWith', async (req, res) => {
     let result = await chats.hasConversationsWith(req.body)
     console.log(result)
     res.send(result)
@@ -594,8 +594,8 @@ var control = new Controller();
     @desc : "This link will get the user's name and will call getUserByUserName()"
     @author :  Shrishti 
 */
-app.get('/rest/api/users/get/:un', async (req, res) => {
-    let result = await control.getUserByUserName(req.params.un);
+app.get('/rest-api/users/get/:un', async (req, res) => {
+    let result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -603,7 +603,7 @@ app.get('/rest/api/users/get/:un', async (req, res) => {
     @desc : "This link will get the user's name and will call addAwards()"
     @author :  Shrishti
 */
-app.put('/rest/api/users/addAward', async (req, res) => {
+app.put('/rest-api/users/addAward', async (req, res) => {
     let user = sessManager.getUser(req, res)
     let result = await control.addAwards(user, req.body);
     result = await control.getUserByUserName(user);
@@ -614,7 +614,7 @@ app.put('/rest/api/users/addAward', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updateAward()"
     @author :  Shrishti
 */
-app.put('/rest/api/users/changeAward/:awardId', async (req, res) => {
+app.put('/rest-api/users/changeAward/:awardId', async (req, res) => {
     let user = sessManager.getUser(req, res)
     let result = await control.updateAwards(user, req.params.awardId, req.body);
     result = await control.getUserByUserName(user);
@@ -625,9 +625,10 @@ app.put('/rest/api/users/changeAward/:awardId', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call removeAwards()"
     @author :  Parag Badala
 */
-app.put('/rest/api/users/removeAward/:un/:id', async (req, res) => {
-    let result = await control.removeAwards(req.params.un, req.params.id);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/removeAward/:awardId', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.removeAwards(user, req.params.awardId);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -635,9 +636,10 @@ app.put('/rest/api/users/removeAward/:un/:id', async (req, res) => {
     @desc : "This link will get the user's name and will call addCertifications()"
     @author :  Dipmalya Sen
 */
-app.put('/rest/api/users/addCertificate/:un', async (req, res) => {
-    let result = await control.addCertifications(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/addCertificate', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.addCertifications(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -646,9 +648,10 @@ app.put('/rest/api/users/addCertificate/:un', async (req, res) => {
     @author :  Dipmalya Sen
 */
 
-app.put('/rest/api/users/changeCertificate/:un/:id', async (req, res) => {
-    let result = await control.updateCertifications(req.params.un, req.params.id, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/changeCertificate/:certificateId', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.updateCertifications(user, req.params.certificateId, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -657,9 +660,10 @@ app.put('/rest/api/users/changeCertificate/:un/:id', async (req, res) => {
     @author :  Himani Jain
 */
 
-app.put('/rest/api/users/removeCertificate/:un/:id', async (req, res) => {
-    let result = await control.removeCertifications(req.params.un, req.params.id);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/removeCertificate/:certificateId', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.removeCertifications(user, req.params.certificateId);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -668,9 +672,10 @@ app.put('/rest/api/users/removeCertificate/:un/:id', async (req, res) => {
     @author :  Himani Jain
 */
 
-app.put('/rest/api/users/addPublication/:un', async (req, res) => {
-    let result = await control.addPublications(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/addPublication', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.addPublications(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -679,9 +684,10 @@ app.put('/rest/api/users/addPublication/:un', async (req, res) => {
     @author :  Lalithya Satya
 */
 
-app.put('/rest/api/users/changePublication/:un/:id', async (req, res) => {
-    let result = await control.updatePublications(req.params.un, req.params.id, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.updatePublications(user, req.params.publicationId, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -690,9 +696,10 @@ app.put('/rest/api/users/changePublication/:un/:id', async (req, res) => {
     @author :  Lalithya Satya
 */
 
-app.put('/rest/api/users/removePublication/:un/:id', async (req, res) => {
-    let result = await control.removePublications(req.params.un, req.params.id, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.removePublications(user, req.params.publicationId, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -701,9 +708,10 @@ app.put('/rest/api/users/removePublication/:un/:id', async (req, res) => {
     @author :  Soumyodipta Majumdar
 */
 
-app.put('/rest/api/users/addEndorsement/:un', async (req, res) => {
-    let result = await control.addEndorsement(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/addEndorsement', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.addEndorsement(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -712,9 +720,10 @@ app.put('/rest/api/users/addEndorsement/:un', async (req, res) => {
     @author :  Soumyodipta Majumdar
 */
 
-app.put('/rest/api/users/addSkill/:un/:skill', async (req, res) => {
-    let result = await control.addSkill(req.params.un, req.params.skill);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/addSkill/:skill', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.addSkill(user, req.params.skill);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -723,9 +732,10 @@ app.put('/rest/api/users/addSkill/:un/:skill', async (req, res) => {
     @author :  Somya Burman
 */
 
-app.put('/rest/api/users/deleteSkill/:un/:skill', async (req, res) => {
-    let result = await control.deleteSkill(req.params.un, req.params.skill);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/deleteSkill/:skill', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.deleteSkill(user, req.params.skill);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -734,9 +744,10 @@ app.put('/rest/api/users/deleteSkill/:un/:skill', async (req, res) => {
     @author :  Somya Burman
 */
 
-app.put('/rest/api/users/updateBio/:un', async (req, res) => {
-    let result = await control.updateBio(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateBio', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.updateBio(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -745,9 +756,10 @@ app.put('/rest/api/users/updateBio/:un', async (req, res) => {
     @author :  Anubha Joshi
 */
 
-app.put('/rest/api/users/addExperience/:un', async (req, res) => {
-    let result = await control.addExperience(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/addExperience', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.addExperience(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -756,9 +768,9 @@ app.put('/rest/api/users/addExperience/:un', async (req, res) => {
     @author :  Anubha Joshi
 */
 
-app.put('/rest/api/users/updateExperience/:un/:id', async (req, res) => {
-    let result = await control.updateExperience(req.params.un, req.params.id, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateExperience/:experienceId', async (req, res) => {
+    let result = await control.updateExperience(user, req.params.experienceId, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -767,9 +779,10 @@ app.put('/rest/api/users/updateExperience/:un/:id', async (req, res) => {
     @author :  Veshnavee 
 */
 
-app.put('/rest/api/users/removeExperience/:un/:id', async (req, res) => {
-    let result = await control.removeExperience(req.params.un, req.params.id);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/removeExperience/:experienceId', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.removeExperience(user, req.params.experienceId);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -778,9 +791,10 @@ app.put('/rest/api/users/removeExperience/:un/:id', async (req, res) => {
     @author :  Veshnavee 
 */
 
-app.put('/rest/api/users/addEducation/:un', async (req, res) => {
-    let result = await control.addEducation(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/addEducation', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.addEducation(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -789,9 +803,10 @@ app.put('/rest/api/users/addEducation/:un', async (req, res) => {
     @author :  Supriya Patil
 */
 
-app.put('/rest/api/users/updateEducation/:un/:id', async (req, res) => {
-    let result = await control.updateEducation(req.params.un, req.params.id, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateEducation/:educationId', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.updateEducation(user, req.params.educationId, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -800,9 +815,10 @@ app.put('/rest/api/users/updateEducation/:un/:id', async (req, res) => {
     @author :  Supriya Patil
 */
 
-app.put('/rest/api/users/removeEducation/:un/:id', async (req, res) => {
-    let result = await control.removeEducation(req.params.un, req.params.id);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/removeEducation/:educationId', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.removeEducation(user, req.params.educationId);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -811,8 +827,9 @@ app.put('/rest/api/users/removeEducation/:un/:id', async (req, res) => {
     @author :  Parag Badala
 */
 
-app.get('/rest/api/users/countConnection/:un', async (req, res) => {
-    let result = await control.countConnection(req.params.un);
+app.get('/rest-api/users/countConnection', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.countConnection(user);
     res.send(result);
 });
 
@@ -821,9 +838,10 @@ app.get('/rest/api/users/countConnection/:un', async (req, res) => {
     @author :  Somya Burman
 */
 
-app.put('/rest/api/users/updateName/:un', async (req, res) => {
-    let result = await control.updateName(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateName', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.updateName(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result)
 });
 
@@ -833,9 +851,10 @@ app.put('/rest/api/users/updateName/:un', async (req, res) => {
 */
 
 
-app.put('/rest/api/users/updateDob/:un', async (req, res) => {
-    let result = await control.updateDOB(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateDob', async (req, res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.updateDOB(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -844,9 +863,10 @@ app.put('/rest/api/users/updateDob/:un', async (req, res) => {
     @author :  Parag Badala
 */
 
-app.put('/rest/api/users/updateEmail/:un', async (req,res) => {
-    let result = await control.updateEmail(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateEmail', async (req,res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.updateEmail(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result)
 });
 
@@ -855,15 +875,16 @@ app.put('/rest/api/users/updateEmail/:un', async (req,res) => {
     @author :  Parag Badala
 */
 
-app.put('/rest/api/users/updateMobile/:un', async (req,res) => {
-    let result = await control.updateMobile(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest-api/users/updateMobile', async (req,res) => {
+    let user = sessManager.getUser(req, res);
+    let result = await control.updateMobile(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result)
 });
 
 
 
-//-------------------------NewFeed-------------------------//
+//-------------------------NewsFeed-------------------------//
 
 
 //fetching the updated posts of a particular person who has logged in based on username 
@@ -895,7 +916,7 @@ const comments = new Comment();
 
 
 //fetching the updated posts of a particular person who has logged in based on username
-app.get("/rest/api/load", async (req, res) => {
+app.get("/rest-api/load", async (req, res) => {
     console.log('Load Invoked');
     userName = sessManager.getUser(req)
     let result = await newsFeed.getNewsFeed(newsFeedCollection,userName);//take username from session
@@ -911,7 +932,7 @@ app.get("/rest/api/load", async (req, res) => {
 /**
  * @description to insert post in database by a user
 */
-app.patch('/rest/api/users/createPosts/update/:userName', async (req, res) => {
+app.patch('/rest-api/users/createPosts/update/:userName', async (req, res) => {
     let result;
     let userName = req.params.userName;
     try {
@@ -926,7 +947,7 @@ app.patch('/rest/api/users/createPosts/update/:userName', async (req, res) => {
 /**
  * @description to edit post inserted in the database by the user
  */
-app.patch('/rest/api/users/editPosts/update/:userName/:postId', async (req, res) => {
+app.patch('/rest-api/users/editPosts/update/:userName/:postId', async (req, res) => {
     let result;
     let userName = req.params.userName;
     let postId = req.params.postId;
@@ -942,7 +963,7 @@ app.patch('/rest/api/users/editPosts/update/:userName/:postId', async (req, res)
 /**
  * @description to delete post inserted in the database by the user
  */
-app.patch('/rest/api/users/deletePosts/update/:userName/:postId', async (req, res) => {
+app.patch('/rest-api/users/deletePosts/update/:userName/:postId', async (req, res) => {
     let result
     let userName = req.params.userName;
     let postId = req.params.postId;
@@ -958,7 +979,7 @@ app.patch('/rest/api/users/deletePosts/update/:userName/:postId', async (req, re
 /**
  * @description to search people in the database by the user
  */
-app.patch('/rest/api/users/searchPeople/', async (req, res) => {
+app.patch('/rest-api/users/searchPeople/', async (req, res) => {
     let result;
     try {
         result = await search.searchPeople(newsFeedCollection,req.body.query);
@@ -972,7 +993,7 @@ app.patch('/rest/api/users/searchPeople/', async (req, res) => {
 /**
  * @description to search companies in the database by the user
  */
-app.patch('/rest/api/users/searchCompanies/', async (req, res) => {
+app.patch('/rest-api/users/searchCompanies/', async (req, res) => {
     let result;
     try {
         result = await search.searchCompanies(newsFeedCollection,req.body.query);

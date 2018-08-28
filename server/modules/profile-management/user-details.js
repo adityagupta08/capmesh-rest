@@ -174,16 +174,21 @@ class Controller {
         @author : Somya Burman
         @param : {string} user name, {object} endorsement object
         @return : db update response
+        sample: 
+        {
+            user: (whom I'm endorsing),
+            comment: (commenting something)
+        }
     */
     async addEndorsement(uName, obj) {
         const id = crypto.randomBytes(16).toString("hex");
-        let query = { userName: uName };
+        let query = { userName: obj.user };
         let newValue = {
             $push: {
                 "profile.endorsements":
                     {
                         $each: [
-                            { "endorsementId": id, "endorsedBy": obj.endorsedBy, "comment": obj.comment }]
+                            { "endorsementId": id, "endorsedBy": uName, "comment": obj.comment }]
                     }
             }
         };
