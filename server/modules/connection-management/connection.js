@@ -16,7 +16,7 @@ const dao = new Dao();
 class Connections {
 
     /**
-     *Desscription - Get all the data of a (user)
+     *Description - Get all the data of a (user)
      * @author Nidhi
      * @param {string} collections name of collection
      * @param {string} name username
@@ -29,20 +29,20 @@ class Connections {
 
 
     /**
-     * Desscription - Get name and image of a (user)
+     * Description - Get name and image of a (user)
      * @author Harshita, Nandkumar
      * @param {string} collections name of collection
      * @param {string} name username
      * @returns {object} result
      */
     async getNameAndImage(collections, name) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: name } }, { $project: { name: "$name", _id:"$userName", profile:"$profile.image" } }]);
-        return (result);
+        let result = await dao.aggregate(collections, [{ $match: { userName: name } }, { $project: { name: "$name", _id: "$userName", profile: "$profile.image" } }]);
+        return (result[0]);
     }
 
 
     /**
-     * Desscription - Getting count of connections
+     * Description - Getting count of connections
      * @author Nidhi
      * @param {string}  collections name of collection
      * @param {object} queryData data to be passed in the query
@@ -50,11 +50,12 @@ class Connections {
      */
     async getConnectionCount(collections, queryData) {
         let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connections" } } } }]);
+        // console.log(result);
         return (result[0].count.toString());
     }
 
     /**
-     *Desscription - Sending Connect request
+     *Description - Sending Connect request
      * (sender - receiver)
      * @author Harshita, Nandkumar
      * @param {string} collections name of collection
@@ -69,7 +70,7 @@ class Connections {
     }
 
     /**
-     * Desscription - Accepting connection request
+     * Description - Accepting connection request
      * (user - requester)
      * @author Kameshwar
      * @param {string} collections name of collection
@@ -86,7 +87,7 @@ class Connections {
     }
 
     /**
-     * Desscription - Remove connection
+     * Description - Remove connection
      * (user - connection)
      * @author Harshita, Nandkumar
      * @param {string} collections name of collection
@@ -102,7 +103,7 @@ class Connections {
     }
 
     /**
-     * Desscription - Blocking connection
+     * Description - Blocking connection
      * (user - blockee)
      * @author Akhil
      * @param {stirng} collections name of collection
@@ -110,7 +111,7 @@ class Connections {
      * @returns {object} result
      */
     async blockConnection(collections, queryData) {
-        console.log(queryData);
+        //console.log(queryData);
         let result = await dao.update(collections, { userName: queryData.user }, { $push: { "blocklist.blocked": queryData.blockee } });
         let res = await dao.update(collections, { userName: queryData.blockee }, { $push: { "blocklist.blockedBy": queryData.user } });
 
@@ -118,35 +119,35 @@ class Connections {
     }
 
     /**
-    * Desscription - Unblocking connection
+    * Description - Unblocking connection
     * (user-blockee)
     * @author Prabha
     * @param {string} collections name of collection
     * @param {object} queryData data to be passed in the query
     */
     async unblock(collections, queryData) {
-        console.log(queryData);
+        //console.log(queryData);
         let result = await dao.update(collections, { userName: queryData.user }, { $pull: { "blocklist.blocked": queryData.blockee } });
-        let res = await dao.update(collections, { userName: queryData.blockee }, { $pull: { "blocklist.blocked": queryData.user } });
+        let res = await dao.update(collections, { userName: queryData.blockee }, { $pull: { "blocklist.blockedBy": queryData.user } });
     }
 
 
     /**
-     * Desscription - Ignoring Invitation Received
+     * Description - Ignoring Invitation Received
      * (user-sender)
      * @author Ganesh
      * @param {string} collections name of collection
      * @param {object} queryData data to be passed in the query
      */
     async ignoreRequest(collections, queryData) {
-        console.log(queryData);
+        //console.log(queryData);
         let result = await dao.update(collections, { userName: queryData.user }, { $pull: { "connectionRequests.receive": queryData.sender } });
         let res = await dao.update(collections, { userName: queryData.sender }, { $pull: { "connectionRequests.sent": queryData.user } });
     }
 
 
     /**
-     * Desscription -View Invitations Sent Count
+     * Description -View Invitations Sent Count
      * (user)
      * @author Kameshwar, Ganesh
      * @param {string} collections name of collection
@@ -155,11 +156,11 @@ class Connections {
      */
     async invitationsSentCount(collections, queryData) {
         let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connectionRequests.sent" } } } }]);
-        return result;
+        return (result[0].count.toString());
     }
 
     /**
-     * Desscription -View Invitations Received Count
+     * Description -View Invitations Received Count
      * (user)
      * @author Sameera
      * @param {string} collections name of collection
@@ -168,11 +169,11 @@ class Connections {
      */
     async invitationsReceivedCount(collections, queryData) {
         let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connectionRequests.receive" } } } }]);
-        return result;
+        return (result[0].count.toString());
     }
 
     /**
-     * Desscription -View Invitations Sent
+     * Description -View Invitations Sent
      * (user)
      * @author Kameshwar, Ganesh
      * @param {string} collections name of collection
@@ -185,9 +186,9 @@ class Connections {
     }
 
     /**
-     * Desscription -View Invitations Received
+     * Description -View Invitations Received
      * (user)
-     *  @author Sameera
+     *  @author Sameera, Kameshwar
      * @param {string} collections  name of collection
      * @param {object} queryData data to be passed in the query
      * @returns {number} result
@@ -197,9 +198,9 @@ class Connections {
         return (result);
     }
 
-    
+
     /**
-     * Desscription -View Connections List
+     * Description -View Connections List
      * (user)
      * @author Harshita, Nandkumar
      * @param {string} collections name of collection
@@ -207,10 +208,23 @@ class Connections {
      * @returns {name} result
      */
     async getConnectionsList(collections, queryData) {
-         let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $project: { connections: "$connections" } }]);
-         return (result);
+        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $project: { connections: "$connections" } }]);
+        return (result);
     }
 
+    /**
+        * Description -Follow a company
+        * (user,companyId)
+        * @author Harshita, Nandkumar
+        * @param {string} collections name of User collection
+        * @param {object} queryData data to be passed in the query
+        * @returns {name} result
+        */
+    async followCompany(userCollection, orgCollection, queryData) {
+        let result = await dao.update(userCollection, { userName: queryData.user }, { $push: { "followingCompany": queryData.companyId } });
+        result = await dao.update(orgCollection, { companyID: queryData.companyId }, { $push: { "profile.followers": queryData.user } });
+        return (result);
+    }
 }
 
 module.exports = Connections;

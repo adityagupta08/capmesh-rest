@@ -5,7 +5,7 @@ const dao = new Dao();
 
 class Controller {
 
-    constructor(){
+    constructor() {
         this.COLLECTION = "users";
     }
 
@@ -181,10 +181,10 @@ class Controller {
         let newValue = {
             $push: {
                 "profile.endorsements":
-                {
-                    $each: [
-                        { "endorsementId": id, "endorsedBy": obj.endorsedBy, "comment": obj.comment }]
-                }
+                    {
+                        $each: [
+                            { "endorsementId": id, "endorsedBy": obj.endorsedBy, "comment": obj.comment }]
+                    }
             }
         };
         let result = await dao.update(this.COLLECTION, query, newValue);
@@ -243,10 +243,10 @@ class Controller {
         let newValue = {
             $push: {
                 "profile.experience":
-                {
-                    $each: [
-                        { "experienceId": id, "designation": obj.designation, "companyName": obj.companyName, "timePeriod": obj.timePeriod }]
-                }
+                    {
+                        $each: [
+                            { "experienceId": id, "designation": obj.designation, "companyName": obj.companyName, "timePeriod": obj.timePeriod }]
+                    }
             }
         }
         let upsert = { "upsert": true };
@@ -301,10 +301,10 @@ class Controller {
         let newValue = {
             $push: {
                 "profile.education":
-                {
-                    $each: [
-                        { "educationId": id, "degreeName": obj.degreeName, "university": obj.university, "percentage": obj.percentage, "yearOfPassing": obj.yearOfPassing }]
-                }
+                    {
+                        $each: [
+                            { "educationId": id, "degreeName": obj.degreeName, "university": obj.university, "percentage": obj.percentage, "yearOfPassing": obj.yearOfPassing }]
+                    }
             }
         }
         let upsert = { "upsert": true };
@@ -357,6 +357,82 @@ class Controller {
     async countConnection(uName) {
         let query = [{ $match: { "userName": uName } }, { $project: { count: { $size: "$connections" }, "_id": 0 } }]
         let result = await dao.aggregate(this.COLLECTION, query);
+        return result;
+    }
+
+    /*
+        @desc "This function will update Name(according to user) passed to the user's profile.. When we click on updateName() then, the entered detail will be updated to the user's profile"
+        @author : Somya Burman
+        @param : {string} user name, {obj} name
+        @return : db update response
+    */
+
+    async updateName(uName, obj) {
+        let query = { "userName": uName };
+        let newValue = {
+            $set: {
+                "name": obj.name
+            }
+        };
+        let upsert = { "upsert": true };
+        let result = await dao.update(this.COLLECTION, query, newValue, upsert);
+        return result;
+    }
+
+    /*
+        @desc "This function will update DOB(according to user) passed to the user's profile.. When we click on updateDOB() then, the entered detail will be updated to the user's profile"
+        @author : Somya Burman
+        @param : {string} user name, {obj} dateOfBith
+        @return : db update response
+    */
+
+    async updateDOB(uName, obj) {
+        let query = { "userName": uName };
+        let newValue = {
+            $set: {
+                "dateOfBirth": obj.dateOfBirth
+            }
+        };
+        let upsert = { "upsert": true };
+        let result = await dao.update(this.COLLECTION, query, newValue, upsert);
+        return result;
+    }
+
+    /*
+        @desc "This function will update Email(according to user) passed to the user's profile.. When we click on updateEmail() then, the entered detail will be updated to the user's profile"
+        @author : Somya Burman
+        @param : {string} user name, {obj} email
+        @return : db update response
+    */
+
+    async updateEmail(uName, obj) {
+        let query = { "userName": uName };
+        let newValue = {
+            $set: {
+                "email": obj.email
+            }
+        };
+        let upsert = { "upsert": true };
+        let result = await dao.update(this.COLLECTION, query, newValue, upsert);
+        return result;
+    }
+
+    /*
+        @desc "This function will update Mobile(according to user) passed to the user's profile.. When we click on updateMobile() then, the entered detail will be updated to the user's profile"
+        @author : Somya Burman
+        @param : {string} user name, {obj} mobile
+        @return : db update response
+    */
+
+    async updateMobile(uName, obj) {
+        let query = { "userName": uName };
+        let newValue = {
+            $set: {
+                "mobile": obj.mobile
+            }
+        };
+        let upsert = { "upsert": true };
+        let result = await dao.update(this.COLLECTION, query, newValue, upsert);
         return result;
     }
 

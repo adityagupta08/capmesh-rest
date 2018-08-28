@@ -3,15 +3,15 @@ const Dao = require('../data-access/data-access');
 const app = express();
 const dao = new Dao();
 
-class Company{
+class Company {
     /**
      * @description Getting data of a company based on ID
      * (companyId)
      * @author Jayasree, Sameera
-     * @param {object} collection having collection 
+     * @param {string} collection having collection name
      * @param {object} queryData having input data object
      * @returns {object} result
-     */    
+     */
     async getData(collection, queryData) {
         let result = await dao.find(collection, { "companyID": queryData.companyId });
         return (result);
@@ -21,133 +21,134 @@ class Company{
      * @description -Getting list of jobs
      * (companyId)
      * @author Akhil, Jayasree
-     * @param {object} collection having collection
+     * @param {string} collection having collection name
      * @param {object} queryData input data object
      * @returns {object} result
      */
     async jobList(collection, queryData) {
-        console.log(queryData);
-        let result = await dao.aggregate(collection, [{ $match: { "companyID": queryData.companyId } }, { $project: { "profile.jobs.jobId": 1 } }]);
-        return (result);
+        // console.log(queryData);
+        let result = await dao.aggregate(collection, [{ $match: { "companyID": queryData.companyId } }, { $project: { "profile.jobs": 1 } }]);
+        return (result[0].profile.jobs);
     }
     /**
      * @description -Adding job post details
-     * (companyId, jobId, jobPosition, postDate, lastDate)
+     * (companyId, jobId, jobPosition, postDate, lastDate, applicants*)
      * @author Jayasree, Sameera
-     * @param {object} collection having collection
+     * @param {string} collection having collection name
      * @param {object} queryData input data object
      * @returns {object} result
-     */   
+     */
     async addJobPost(collection, queryData) {
-        let result = await dao.update(collection, { "companyID": queryData.companyId },{$push:{"profile.jobs": {"jobId": queryData.jobId, "position": queryData.jobPosition, "timestamp":queryData.postDate, "lastDate":queryData.lastDate}}});
+        let result = await dao.update(collection, { "companyID": queryData.companyId }, { $push: { "profile.jobs": { "jobId": queryData.jobId, "position": queryData.jobPosition, "timestamp": queryData.postDate, "lastDate": queryData.lastDate, "applicants": [] } } });
         return (result);
     }
 
     /**
      * @description -Getting job details
-     * @author Jayasree, Sameera
-     * @param {object} collection having collection
+     * (companyId,jobId)
+     * @author Harshita
+     * @param {string} collection having collection name
      * @param {object} queryData input data object
      * @returns {object} result
-     * Incomplete
      */
     async getJobDetails(collection, queryData) {
-        let result = await dao.aggregate(collection, { "companyID": queryData.companyId },{$push:{"profile.jobs": {"jobId": queryData.jobId, "position": queryData.jobPosition, "timestamp":queryData.postDate, "lastDate":queryData.lastDate}}});
-        return (result);
+        let result = await dao.aggregate(collection, [{ $match: { 'companyID': queryData.companyId } }, { $project: { post: { $filter: { input: '$profile.jobs', as: 'job', cond: { $eq: ['$$job.jobId', queryData.jobId] } } }, _id: 0 } }]);
+        return (result[0].post[0]);
     }
 
 
     /**
-     * @description -Adding job post details
+     * @description -Adding new post
      * (companyId, postId, content)
      * @author Sameera,Sahithi
-     * @param {object} collection having collection
+     * @param {string} collection having collection name
      * @param {object} queryData input data object
      * @returns {object} result
      */
-        
     async addPost(collection, queryData) {
-        let result = await dao.update(collection, { "companyID": queryData.companyId },{$push:{"profile.post": {"postId": queryData.postId, "content": queryData.content, "timestamp":queryData.postDate, likes:[], comments:[]}}});
+        let result = await dao.update(collection, { "companyID": queryData.companyId }, { $push: { "profile.post": { "postId": queryData.postId, "content": queryData.content, "timestamp": queryData.postDate, likes: [], comments: [] } } });
         return (result);
     }
 
     /**
      * @description Removing job post details
-     * (companyId, jobId) Error
-     * @author Nandkumar
-     * @param {object} collection having collection
+     * (companyId, jobId)
+     * @author Harshita
+     * @param {string} collection having collection name
      * @param {object} queryData having query
      * @returns {object} result
      */
-        
     async removeJobPost(collection, queryData) {
-        let result = await dao.update(collection, {'companyID': queryData.companyId}, { $pull: { "profile.jobs" : { jobId: queryData.jobId }}},false,true);
-        console.log("Deleted");
-        console.log(result);
-        return (result) ;
+        let result = await dao.update(collection, { 'companyID': queryData.companyId }, { $pull: { "profile.jobs": { jobId: queryData.jobId } } });
+        // console.log("Deleted");
+        // console.log(result);
+        return (result);
     }
 
     /**
      * @description -Getting list of applicants
      * (companyId, jobId)
      * @author Jayasree,Sameera
-     * @param {object} collection having collection
+     * @param {string} collection having collection name
      * @param {object} queryData having query
      * @returns {object} result
      */
-  
     async applicantList(collection, queryData) {
         let result = await dao.aggregate(collection, [{ $match: { "companyID": queryData.companyId } }, { $project: { "profile.jobs": 1, "_id": 0 } }]);
         for (let job of result[0].profile.jobs) {
             if (job.jobId === queryData.jobId)
                 return job.applicants;
         }
-        return ({ err: "No applicants" });
-    }
-
-    /**
-     * @description -Adding new company  
-     * @author Sameera,Jayasree
-     * @param {object} collection having collection
-     * @param {object} queryData having query
-     * @returns {object} result
-     */
-    async addNewCompany(collection, queryData) {
-        let result = await dao.insert(collection, queryData);
-        return (result);
-    }
-
-    /**
-     * @description -Update name of company
-     * Pending 
-     * @author Sahithi,Akhil
-     * @param {object} collection having collection
-     * @param {object} queryData having query
-     * @returns {object} result
-     */
-    async updateData(collection, queryData) {
-        let result = await dao.update(collection, {"companyID": queryData.companyId},{$set:{"name":"IBM"}});
-        return (result);
+        return ({ err: "No such job found" });
     }
 
     /**
      * @description -Getting applicant count for specific job id
-     *  @author Nandkumar
-     * @param {object} collection having collection
+     * (companyId,jobId)
+     * @author Nandkumar
+     * @param {string} collection having collection name
      * @param {object} queryData having query
      * @returns {object} result
      */
     async getApplicantCount(collection, queryData) {
         let result = await dao.aggregate(collection, [{ $match: { "companyID": queryData.companyId } }, { $project: { "profile.jobs": 1, "_id": 0 } }]);
+        console.log(result[0].profile.jobs);
         for (let job of result[0].profile.jobs) {
             if (job.jobId === queryData.jobId)
-                return job.applicants.length;
+                return ({ "length": job.applicants.length });
         }
         return ({ err: "No applicants" });
     }
+
+    /**
+     * @description -Like post
+     * (companyId, postId, user)
+     * @author Nandkumar
+     * @param {string} collection having collection name
+     * @param {object} queryData input data object
+     * @returns {object} result
+     */
+    async likePost(collection, queryData) {
+        let result = await dao.update(collection, { "companyID": queryData.companyId, 'profile.post.postId': queryData.postId }, { $push: { "profile.post.$.likes": { "likedBy": queryData.user, "timestamp": new Date() } } });
+        return (result);
+    }
+
+
+    /**
+    * @description Add applicant to the applicant list
+    * (companyId, jobId, applicant)
+    * @author Nandkumar
+    * @param {string} collection having collection name
+    * @param {object} queryData having query
+    * @returns {object} result
+    */
+    async addApplicantToList(collection, queryData) {
+        let result = await dao.update(collection, { "companyID": queryData.companyId, 'profile.jobs.jobId': queryData.jobId }, { $push: { "profile.jobs.$.applicants": queryData.applicant } });
+        return result;
+    }
 }
 
-module.exports=Company;
+module.exports = Company;
 
 
 /*

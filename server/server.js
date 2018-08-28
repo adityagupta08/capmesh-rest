@@ -24,6 +24,7 @@ const dao = new Dao()
 
 const company = new Company();
 const connCollection = "users";
+const orgCollection = "organizations"
 
 const SessMan = require('./modules/user-management/session') 
 const sessManager = new SessMan()
@@ -243,137 +244,153 @@ app.post('/get-all-connections', async (req, res) => {
     }
 })
 
+/**
+ * Follow a company
+ */
+app.post('/follow-company', async (req, res) => {
+    try {
+        let result = await connection.followCompany(connCollection, orgCollection, req.body);
+        res.end(JSON.stringify(result));
+    }
+    catch (err) {
+        res.end("Error 404");
+    }
+})
+
 //--------------------------
 
 /**
  * Getting data of a company based on ID
+ * (companyId)
+ * CO
  */
 app.post('/orgs/get/', async (req, res) => {
-    let result = await company.getData("orgs", req.body);
+    let result = await company.getData(orgCollection, req.body);
     res.send(result);
 })
 /**
  * List of Jobs
+ * (companyId)
+ * CO
  */
 app.post('/orgs/getJobList/', async (req, res) => {
-
-    let result = await company.jobList("orgs", req.body);
+    
+    let result = await company.jobList(orgCollection, req.body);
     res.send(result);
 });
 
 /**
  * Getting specific job post
+ * (companyId,jobId)
+ * CO
  */
 
-app.post('/orgs/getJobLists/', async (req, res) => {
-
-    let result = await company.getJobDetails("orgs", req.body);
+app.post('/orgs/getJob/', async (req, res) => {
+    
+    let result = await company.getJobDetails(orgCollection, req.body);
     res.send(result);
 });
 
 /**
  * Adding job post details
+ * (companyId, jobId, jobPosition, postDate, lastDate, applicants*)
+ * CO
  */
 app.post('/orgs/postJob/', async (req, res) => {
     let result;
     try {
-        result = await company.addJobPost("orgs", req.body);
-    }
+        result = await company.addJobPost(orgCollection, req.body);
+    } 
     catch (err) {
-        result = { "err": err };
+        result = {"err":err};
     }
     res.send(result);
 })
 /**
  * Removing job post details
+ * (companyId, jobId)
+ * CO
  */
 app.post('/orgs/removeJob/', async (req, res) => {
     let result;
-    console.log(req.body);
     try {
-        result = await company.removeJobPost("orgs", req.body);
-
-        console.log("Deleted")
-    }
+        result = await company.removeJobPost(orgCollection, req.body);
+    } 
     catch (err) {
-        result = { "err": err };
+        result = {"err":err};
     }
     res.send(result);
 })
 
 /**
- * Adding job post details
+ * Adding new post
+ * (companyId, postId, content)
+ * CO
  */
 app.post('/orgs/add-post/', async (req, res) => {
     let result;
     try {
-        result = await company.addPost("orgs", req.body);
-    }
+        result = await company.addPost(orgCollection, req.body);
+    } 
     catch (err) {
-        result = { "err": err };
+        result = {"err":err};
+    }
+    res.send(result);
+})
+
+/**
+ * Add like to post
+ * (companyId, postId, user)
+ * CO
+ */
+app.post('/orgs/like-post/', async (req, res) => {
+    let result;
+    try {
+        result = await company.likePost(orgCollection, req.body);
+    } 
+    catch (err) {
+        result = {"err":err};
     }
     res.send(result);
 })
 
 /**
  * List of applicants
+ *  (companyId, jobId)
  */
 app.post('/orgs/applicant-list/', async (req, res) => {
-    let result = await company.applicantList("orgs", req.body);
-    res.send(result);
+    let result = await company.applicantList(orgCollection, req.body);    
+    res.send(result);    
 })
-
-/**
- * Adding new company
- */
-app.post('/orgs/add-new/', async (req, res) => {
-
-    let result;
-    try {
-        result = await company.addNewCompany("orgs", req.body);
-    }
-    catch (err) {
-        result = { error: "err" }
-    }
-    res.send(result)
-})
-
-// /**
-//  * Removing the company
-//  * skipped Pending
-//  */
-// app.post('/orgs/remove/', async (req, res) => {
-//     let result = await dao.post("orgs", { "name":"MS" })
-//     res.send(result)
-// })
 
 
 /**
- * Profile Editing
- * Pending
+ * Getting applicant count
+ *  (companyId, jobId)
  */
-app.post('/orgs/update/', async (req, res) => {
+app.post('/orgs/applicant-count/', async (req, res) => {
     let result;
     try {
-        result = await company.updateData("orgs", req.body)
-    }
-    catch (err) {
-        result = { err: err }
+        result = await company.getApplicantCount(orgCollection, req.body)
+    } 
+    catch(err) {
+        result = {err:err}
     }
     res.send(result);
 });
 
 
 /**
- * Getting applicant count
- */
-app.post('/orgs/applicant-count/', async (req, res) => {
+*@description Add applicant to the applicant list
+* (companyId, jobId, applicant)
+*/
+app.post('/orgs/add-applicant/', async (req, res) => {
     let result;
     try {
-        result = await company.getApplicantCount("orgs", req.body)
-    }
-    catch (err) {
-        result = { err: err }
+        result = await company.addApplicantToList(orgCollection, req.body)
+    } 
+    catch(err) {
+        result = {err:err}
     }
     res.send(result);
 });
@@ -469,6 +486,7 @@ app.get('/rest/api/users/get/:un', async (req, res) => {
 */
 app.put('/rest/api/users/addAward/:un', async (req, res) => {
     let result = await control.addAwards(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -478,6 +496,7 @@ app.put('/rest/api/users/addAward/:un', async (req, res) => {
 */
 app.put('/rest/api/users/changeAward/:un/:id', async (req, res) => {
     let result = await control.updateAwards(req.params.un, req.params.id, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -487,6 +506,7 @@ app.put('/rest/api/users/changeAward/:un/:id', async (req, res) => {
 */
 app.put('/rest/api/users/removeAward/:un/:id', async (req, res) => {
     let result = await control.removeAwards(req.params.un, req.params.id);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -496,6 +516,7 @@ app.put('/rest/api/users/removeAward/:un/:id', async (req, res) => {
 */
 app.put('/rest/api/users/addCertificate/:un', async (req, res) => {
     let result = await control.addCertifications(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -506,6 +527,7 @@ app.put('/rest/api/users/addCertificate/:un', async (req, res) => {
 
 app.put('/rest/api/users/changeCertificate/:un/:id', async (req, res) => {
     let result = await control.updateCertifications(req.params.un, req.params.id, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -516,6 +538,7 @@ app.put('/rest/api/users/changeCertificate/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/removeCertificate/:un/:id', async (req, res) => {
     let result = await control.removeCertifications(req.params.un, req.params.id);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -526,6 +549,7 @@ app.put('/rest/api/users/removeCertificate/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/addPublication/:un', async (req, res) => {
     let result = await control.addPublications(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -536,6 +560,7 @@ app.put('/rest/api/users/addPublication/:un', async (req, res) => {
 
 app.put('/rest/api/users/changePublication/:un/:id', async (req, res) => {
     let result = await control.updatePublications(req.params.un, req.params.id, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -546,6 +571,7 @@ app.put('/rest/api/users/changePublication/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/removePublication/:un/:id', async (req, res) => {
     let result = await control.removePublications(req.params.un, req.params.id, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -556,6 +582,7 @@ app.put('/rest/api/users/removePublication/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/addEndorsement/:un', async (req, res) => {
     let result = await control.addEndorsement(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -566,6 +593,7 @@ app.put('/rest/api/users/addEndorsement/:un', async (req, res) => {
 
 app.put('/rest/api/users/addSkill/:un/:skill', async (req, res) => {
     let result = await control.addSkill(req.params.un, req.params.skill);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -576,6 +604,7 @@ app.put('/rest/api/users/addSkill/:un/:skill', async (req, res) => {
 
 app.put('/rest/api/users/deleteSkill/:un/:skill', async (req, res) => {
     let result = await control.deleteSkill(req.params.un, req.params.skill);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -586,6 +615,7 @@ app.put('/rest/api/users/deleteSkill/:un/:skill', async (req, res) => {
 
 app.put('/rest/api/users/updateBio/:un', async (req, res) => {
     let result = await control.updateBio(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -596,6 +626,7 @@ app.put('/rest/api/users/updateBio/:un', async (req, res) => {
 
 app.put('/rest/api/users/addExperience/:un', async (req, res) => {
     let result = await control.addExperience(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -606,6 +637,7 @@ app.put('/rest/api/users/addExperience/:un', async (req, res) => {
 
 app.put('/rest/api/users/updateExperience/:un/:id', async (req, res) => {
     let result = await control.updateExperience(req.params.un, req.params.id, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -616,6 +648,7 @@ app.put('/rest/api/users/updateExperience/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/removeExperience/:un/:id', async (req, res) => {
     let result = await control.removeExperience(req.params.un, req.params.id);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -626,6 +659,7 @@ app.put('/rest/api/users/removeExperience/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/addEducation/:un', async (req, res) => {
     let result = await control.addEducation(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -636,6 +670,7 @@ app.put('/rest/api/users/addEducation/:un', async (req, res) => {
 
 app.put('/rest/api/users/updateEducation/:un/:id', async (req, res) => {
     let result = await control.updateEducation(req.params.un, req.params.id, req.body);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -646,6 +681,7 @@ app.put('/rest/api/users/updateEducation/:un/:id', async (req, res) => {
 
 app.put('/rest/api/users/removeEducation/:un/:id', async (req, res) => {
     let result = await control.removeEducation(req.params.un, req.params.id);
+    result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -659,6 +695,50 @@ app.get('/rest/api/users/countConnection/:un', async (req, res) => {
     res.send(result);
 });
 
+/*
+    @desc : "This link will get the user's name and will call updateName()"
+    @author :  Somya Burman
+*/
+
+app.put('/rest/api/users/updateName/:un', async (req, res) => {
+    let result = await control.updateName(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
+    res.send(result)
+});
+
+/*
+    @desc : "This link will get the user's name and will call updateDOB()"
+    @author :  Parag Badala
+*/
+
+
+app.put('/rest/api/users/updateDob/:un', async (req, res) => {
+    let result = await control.updateDOB(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
+    res.send(result);
+});
+
+/*
+    @desc : "This link will get the user's name and will call upateEmail()"
+    @author :  Parag Badala
+*/
+
+app.put('/rest/api/users/updateEmail/:un', async (req,res) => {
+    let result = await control.updateEmail(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
+    res.send(result)
+});
+
+/*
+    @desc : "This link will get the user's name and will call updateMobile()"
+    @author :  Parag Badala
+*/
+
+app.put('/rest/api/users/updateMobile/:un', async (req,res) => {
+    let result = await control.updateMobile(req.params.un, req.body);
+    result = await control.getUserByUserName(req.params.un);
+    res.send(result)
+});
 
 //-----------------Account Management-------------------//
 
