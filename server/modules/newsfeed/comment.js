@@ -23,6 +23,10 @@ class Comments {
             }
             else return 0;
         })
+        let count = result[0].comments.length;
+        result.push({ "count": count })
+
+        //console.log(result[1].count);
         return (result);
     }
 
@@ -40,7 +44,7 @@ class Comments {
     async postComments(collections, uId, pId, requestBody) {
         let query = { $and: [{ "userName": uId }, { "posts.postId": pId }] };
         
-        let newquery = { $push: { "posts.$.comments": { "commentBy": requestBody.commentBy,"content": requestBody.content, "timestamp": new Date() } } }
+        let newquery = { $push: { "posts.$.comments": { "commentedBy": requestBody.userName,"content": requestBody.content, "timestamp": new Date() } } }
         let result = await dao.update(collections, query, newquery);
         return (result)
     }

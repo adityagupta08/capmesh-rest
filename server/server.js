@@ -793,7 +793,7 @@ const likes = new Likes();
 
 //add and delete comments
 const Comment = require('./modules/newsfeed/comment')
-const comment = new Comment();
+const comments = new Comment();
 
 
 //fetching the updated posts of a particular person who has logged in based on username
@@ -863,7 +863,21 @@ app.patch('/rest/api/users/deletePosts/update/:userName/:postId', async (req, re
 app.patch('/rest/api/users/searchPeople/', async (req, res) => {
     let result;
     try {
-        result = await search.searchPeople(newsFeedCollection, req.body.query);
+        result = await search.searchPeople(newsFeedCollection,req.body.query);
+    }
+    catch (err) {
+        result = { err: err }
+    }
+    res.send(result)
+})
+
+/**
+ * @description to search companies in the database by the user
+ */
+app.patch('/rest/api/users/searchCompanies/', async (req, res) => {
+    let result;
+    try {
+        result = await search.searchCompanies(newsFeedCollection,req.body.query);
     }
     catch (err) {
         result = { err: err }
@@ -877,9 +891,7 @@ app.post('/getLike', async (req, res) => {
     let result
     try {
         var store=req.body;
-        
-        result = await likes.getLike(newsFeedCollection,store.name,store.time)
-        
+        result = await likes.getLike(connCollection,store.userName,store.postId,store.likedByName)
     } 
     catch (err) {
         result = {err:err}
@@ -891,8 +903,7 @@ app.post('/removeLike', async (req, res) => {
     let result
     try {
         var store=req.body;
-        result = await likes.removeLike(newsFeedCollection,store.name,store.time)
-        console.log(store.name);
+        result = await likes.removeLike(connCollection,store.userName,store.postId,store.likedByName)
     } 
     catch (err) {
         result = {err:err}
@@ -900,12 +911,20 @@ app.post('/removeLike', async (req, res) => {
     res.send(result)
 })
 
+app.get('/getLikesdetails/:postId', async (req, res) => {
+    var id=req.params.postId
+    
+    let result = await likes.getLikesDetails(connCollection,id)
+    res.send(result)
+})
+
+
 /***
  * @Description calling getComments() method of Comments class in comments.js file 
  */
 app.get('/getComments/:id', async (req, res) => {
     let pId = req.params.id;
-    let result = await comment.getComments(newsFeedCollection, pId);
+    let result = await comments.getComments(newsFeedCollection, pId);
     res.send(result);
 })
 
@@ -917,13 +936,13 @@ app.get('/getComments/:id', async (req, res) => {
  */
 app.use(parser.json());
 
-app.put('/updateComments/:uname/:pid', async (req, res) => {
+app.put('/updateComments/:userName/:postId', async (req, res) => {
     let result
-    let uId = req.params['uname'];
-    let pId = eval(req.params.pid)
+    let userName = req.params['userName']
+    let postId = req.params['postId']
 
     try {
-        let result = await comment.postComments(newsFeedCollection, uId, pId, req.body)
+        let result = await comments.postComments(newsFeedCollection, userName, postId, req.body)
         
         res.send(result)
     }

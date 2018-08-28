@@ -35,16 +35,23 @@ const dao = new Dao();
 
 class likes {
 
-    async getLike(collections,userName,time) {
-       let result = await dao.update(collections, {$and:[{"userName":"vinal"},{"posts.postId":5}]},
-       {$push:{"posts.$.likes":{"likedBy":userName,"timestamp":time}}});
+    async getLike(collections,userName,postId,likedByname) {
+       let result = await dao.update(collections, {$and:[{"userName":userName},{"posts.postId":postId}]},{$push:{"posts.$.likes":{"likedBy":likedByname,"timestamp":new Date()}}});
         return (result);
     }
 
-    async removeLike(collections,userName,time) {
+    async removeLike(collections,userName,postid,likedByname) {
         
-       let result = await dao.update(collections, {$and:[{"userName":"vinal"},{"posts.postId":5}]},
-       {$pull:{"posts.$.likes":{"likedBy":userName,"timestamp":time}}});
+       let result = await dao.update(collections, {$and:[{"userName":userName},{"posts.postId":postid}]},{$pull:{"posts.$.likes":{"likedBy":likedByname}}});
+        return (result);
+    }
+
+    async getLikesDetails(collections,id) {
+        let query = [{ $project: { "posts.postId": 1 ,"posts.likes": 1 } },{$unwind:"$posts"},{ $match: { "posts.postId":id} }]
+        let result=await dao.aggregate(collections,query);
+        let count=result[0].posts.likes.length;
+        result.push({"count":count})
+        //console.log(result[1].count)
         return (result);
     }
 }

@@ -14,12 +14,14 @@ class Posts {
      * @param {string} userName
      * @returns {Object} result 
      */
-    async createPosts(collection, data, userName) {
+    async createPosts(collections,data, userName) {
         data.postId = uuidv4();
         data.timestamp = new Date();
+        data.likes = [];
+        data.comments = [];
         var filter = { "userName": userName };
         var content = { $push: { "posts": data } };
-        var result = await dao.update(collection, filter, content)
+        var result = await dao.update(collections, filter, content)
         return result
     }
 
