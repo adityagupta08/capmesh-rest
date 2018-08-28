@@ -63,9 +63,9 @@ class organizationManagement {
     async deleteVerifiedUser(req) {
         let orgFind = await dao.find('verifications', { companyID: req.companyID })
         if (orgFind.length == 1) {
-            if (orgFind[0].companyID === req.companyID && orgFind[0].verificationCode === req.link) {
-                let verifyUpdate = await dao.update('organizations', { companyID: req.companyID }, { $set: { isVerified: true } })
-                let result = await dao.delete("verifications", { companyID: req.companyID })
+            if (orgFind[0].companyID === req.companyId && orgFind[0].verificationCode === req.verificationCode) {
+                let verifyUpdate = await dao.update('organizations', { companyID: req.companyId }, { $set: { isVerified: true } })
+                let result = await dao.delete("verifications", { companyID: req.companyId })
                 return verifyUpdate;
 
             }
@@ -94,27 +94,19 @@ class organizationManagement {
         if (log.length == 1) {
             if (log[0].isDeleted === false) {
                 let result = await dao.find("auth-users", { email: log[0].email })
-                let hashPassword = utils.encryptPassword(req.password)
-                if (result[0].password == hashPassword) {
-                    if (log[0].isVerified == true) {
-                        return "logged In";
+                if (result) {
+                    let hashPassword = utils.encryptPassword(req.password)
+                    if (result[0].password == hashPassword) {
+                        return "Logged In"
                     }
-                    else {
-                        return "account logged In with not verified";
-                    }
-
-                }
-                else {
-                    return "Incorrect Password";
                 }
             }
             else {
                 return "Account deleted";
             }
         }
-
         else {
-            return "Username not found";
+            return "Incorrect Username or Password";
         }
     }
 

@@ -123,7 +123,7 @@ class userManagement {
      * @param {Object} userObj having userDetails
      * @returns {Object} Database Result or Error
      */
-    async updateVerifyLink(userObj) {
+    async updateVerifyCode(userObj) {
         let result
         let code = utils.generateVerificationCode();
         try {
