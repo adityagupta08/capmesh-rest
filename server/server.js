@@ -750,6 +750,178 @@ app.post('/rest/api/orgs/changepassword', async (req, res) => {
     let result = await orgs.changePassword(req.body);
     res.send(result)
 })
+
+//-------------------------NewFeed-------------------------//
+
+
+//fetching the updated posts of a particular person who has logged in based on username 
+
+const NewsFeed = require('./modules/newsfeed/newsfeed')
+const newsFeed = new NewsFeed();
+
+
+//searching person based on username
+const Search = require('./modules/newsfeed/search');
+const search = new Search();
+
+
+//add, update and delete the posts of a particular user
+const Posts = require('./modules/newsfeed/posts');
+const post = new Posts();
+
+const newsFeedCollection = "demo";              //name of my collection
+
+
+//Likes and Unlikes done by user
+const Likes = require('./modules/newsfeed/likes');//puneeth
+const likes = new Likes();
+
+
+//add and delete comments
+const Comment = require('./modules/newsfeed/comment')
+const comment = new Comment();
+
+
+//fetching the updated posts of a particular person who has logged in based on username
+app.get("/rest/api/load", async (req, res) => {
+    console.log('Load Invoked');
+    let result = await newsFeed.getNewsFeed(newsFeedCollection,"dip95");//take username from session
+    res.send(result)
+    
+})
+
+
+
+//add, delete and update the posts
+
+
+/**
+ * @description to insert post in database by a user
+*/
+app.patch('/rest/api/users/createPosts/update/:userName', async (req, res) => {
+    let result;
+    let userName = req.params.userName;
+    try {
+        result = await post.createPosts(newsFeedCollection, req.body,userName);
+    }
+    catch (err) {
+        result = { err: err }
+    }
+    res.send(result)
+});
+
+/**
+ * @description to edit post inserted in the database by the user
+ */
+app.patch('/rest/api/users/editPosts/update/:userName/:postId', async (req, res) => {
+    let result;
+    let userName = req.params.userName;
+    let postId = req.params.postId;
+    try {
+        result = await post.editPosts(newsFeedCollection, req.body,userName,postId);
+    }
+    catch (err) {
+        result = { err: err }
+    }
+    res.send(result)
+})
+
+/**
+ * @description to delete post inserted in the database by the user
+ */
+app.patch('/rest/api/users/deletePosts/update/:userName/:postId', async (req, res) => {
+    let result
+    let userName = req.params.userName;
+    let postId = req.params.postId;
+    try {
+        result = await post.deletePosts(newsFeedCollection, userName,postId);
+    }
+    catch (err) {
+        result = { err: err }
+    }
+    res.send(result)
+})
+
+/**
+ * @description to search people in the database by the user
+ */
+app.patch('/rest/api/users/searchPeople/', async (req, res) => {
+    let result;
+    try {
+        result = await search.searchPeople(newsFeedCollection, req.body.query);
+    }
+    catch (err) {
+        result = { err: err }
+    }
+    res.send(result)
+})
+
+
+//Likes and dislikes
+app.post('/getLike', async (req, res) => {
+    let result
+    try {
+        var store=req.body;
+        
+        result = await likes.getLike(newsFeedCollection,store.name,store.time)
+        
+    } 
+    catch (err) {
+        result = {err:err}
+    } 
+    res.send(result)
+})
+
+app.post('/removeLike', async (req, res) => {
+    let result
+    try {
+        var store=req.body;
+        result = await likes.removeLike(newsFeedCollection,store.name,store.time)
+        console.log(store.name);
+    } 
+    catch (err) {
+        result = {err:err}
+    } 
+    res.send(result)
+})
+
+/***
+ * @Description calling getComments() method of Comments class in comments.js file 
+ */
+app.get('/getComments/:id', async (req, res) => {
+    let pId = req.params.id;
+    let result = await comment.getComments(newsFeedCollection, pId);
+    res.send(result);
+})
+
+
+
+
+/***
+ * @Description calling postComments() method of Comments class in comments.js file 
+ */
+app.use(parser.json());
+
+app.put('/updateComments/:uname/:pid', async (req, res) => {
+    let result
+    let uId = req.params['uname'];
+    let pId = eval(req.params.pid)
+
+    try {
+        let result = await comment.postComments(newsFeedCollection, uId, pId, req.body)
+        
+        res.send(result)
+    }
+    catch (err) {
+        result = { err: err }
+    }
+
+
+})
+
+
+
+
 //-------------------------END-----------------------------//
 
 app.listen('8080', () => console.log('Listening on port 8080'));

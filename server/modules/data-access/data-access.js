@@ -14,7 +14,8 @@ const mongoClient = require('mongodb')
 class Dao {
     constructor() {
         this.URL = 'mongodb://10.102.55.82:27017/'
-        console.log(this.URL)
+        this.DB = 'linkedindemo'
+        //console.log(this.URL)
     }
 
     /**
@@ -29,7 +30,7 @@ class Dao {
         let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
         let result
         try {
-            let db = mongo.db('capmesh')
+            let db = mongo.db(this.DB)
             result = (await db.collection(collection).insertOne(obj))
             return result
         }
@@ -54,7 +55,7 @@ class Dao {
         let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
         let result
         try {
-            let db = mongo.db('capmesh')
+            let db = mongo.db(this.DB)
             result = (await db.collection(collection).find(query).toArray())
             return result
         }
@@ -79,7 +80,7 @@ class Dao {
         let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
         let result
         try {
-            let db = mongo.db('capmesh')
+            let db = mongo.db(this.DB)
             result = (await db.collection(collection).aggregate(query).toArray())
             return result
         }
@@ -108,7 +109,7 @@ class Dao {
         let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
         let result
         try {
-            let db = mongo.db('capmesh')
+            let db = mongo.db(this.DB)
             result = (await db.collection(collection).updateOne(query, newValues,upsert))
             return result
         }
@@ -133,7 +134,7 @@ class Dao {
         let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
         let result
         try {
-            let db = mongo.db('capmesh')
+            let db = mongo.db(this.DB)
             result = (await db.collection(collection).deleteOne(query))
             return result
         }
