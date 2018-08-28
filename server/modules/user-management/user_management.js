@@ -3,7 +3,8 @@ const Utils = require('./utils')
 const DefaultObj = require('./schema');
 const dao = new Dao()
 const utils = new Utils()
-var email;
+
+
 //creating userManagement to export in server.js
 class userManagement {
 
@@ -12,8 +13,15 @@ class userManagement {
      * @author Soumya Nelanti, Sayali
      * @returns {Array} The array of all the documents in the collection   
      */
+    constructor() {
+        this.USERS = 'users',
+            this.FORGET = 'forget-password'
+        this.AUTH = 'auth-users'
+        this.VERIFY = 'verifications'
+    }
+
     async findAll() {
-        let resultFindAll = await dao.find("demo");
+        let resultFindAll = await dao.find("users");
         return resultFindAll;
     }
 
@@ -35,7 +43,7 @@ class userManagement {
         }
         let result;
         try {
-            result = await dao.insert("demo", userObj);
+            result = await dao.insert(this.USERS, userObj);
         }
         catch (err) {
             result = { error: err };
@@ -54,7 +62,7 @@ class userManagement {
         let obj = { email: userObj.email, password: hashPassword };
         let result
         try {
-            result = await dao.insert("authUsers", obj);
+            result = await dao.insert(this.AUTH, obj);
         }
         catch (err) {
             result = { error: err };
@@ -74,7 +82,7 @@ class userManagement {
         let obj = { verificationCode: code, userName: userObj.userName };
         let result;
         try {
-            result = await dao.insert("verifications", obj);
+            result = await dao.insert(this.VERIFY, obj);
         }
         catch (err) {
             result = { error: err };
@@ -90,11 +98,14 @@ class userManagement {
      * @returns {Object} Database Result or Error
      */
     async deleteVerifiedUser(userObj) {
-        let userFind = await dao.find('verifications', { userName: userObj.userName })
+        let userFind = await dao.find(this.VERIFY, { userName: userObj.userName })
+        console.log(userFind.length)
         if (userFind.length == 1) {
-            if (userFind[0].userName === userObj.userName && userFind[0].verificationCode === userObj.verificationCode) {
-                let verifyUpdate = await dao.update('demo', { userName: userObj.userName }, { $set: { isVerified: true } })
-                let result = await dao.delete("verifications", { userName: userObj.userName })
+            console.log("SDfgSDfsd")
+            if (userFind[0].userName == userObj.userName && userFind[0].verificationCode == userObj.verificationCode) {
+                console.log("Hello")
+                let verifyUpdate = await dao.update(this.USERS, { userName: userObj.userName }, { $set: { isVerified: true } })
+                let result = await dao.delete(this.VERIFY, { userName: userObj.userName })
                 return verifyUpdate;
 
             }
@@ -116,7 +127,7 @@ class userManagement {
         let result
         let code = utils.generateVerificationCode();
         try {
-            result = await dao.update("verifications", { userName: userObj.userName }, { $set: { verificatonCode: code } })
+            result = await dao.update(this.VERIFY, { userName: userObj.userName }, { $set: { verificatonCode: code } })
         }
         catch (err) {
             result = { err: err }
@@ -132,44 +143,38 @@ class userManagement {
      * @returns {Object} Database Result or Error
      */
     async signin(obj) {
-        let log = await dao.find("demo", { userName: obj.userName })
+        let log = await dao.find(this.USERS, { userName: obj.userName })
         if (log.length == 1) {
             if (log[0].isDeleted == false) {
-                let result = await dao.find("authUsers", { email: log[0].email })
-                let hashPassword = utils.encryptPassword(obj.password)
-                if (result[0].password == hashPassword) {
-                    if (log[0].isVerified == true) {
-                        return "logged In";
+                let result = await dao.find(this.AUTH, { email: log[0].email })
+                if (result) {
+                    let hashPassword = utils.encryptPassword(obj.password)
+                    if (result[0].password == hashPassword) {
+                        return "Logged In"
                     }
-                    else {
-                        return "account logged In with not verified";
-                    }
-
-                }
-                else {
-                    return "Incorrect Password";
                 }
             }
             else {
                 return "Account deleted";
             }
         }
-
         else {
-            return "Username not found";
+            return "Incorrect Username or Password";
         }
     }
 
     //forgot password verification link
     async forgotPassword(req) {
-        let result = await dao.find("demo", { userName: req.userName })
+        let result = await dao.find(this.USERS, { userName: req.userName })
+        console.log(result)
         if (result.length == 1) {
+            console.log("abc")
             if (result[0].userName == req.userName) {
                 this.email = result[0].email;
-                let link = utils.generateVerificationLink();
+                let link = utils.generateVerificationCode();
                 let obj = { verificationCode: link, userName: req.userName };
                 try {
-                    result = await dao.insert("pwdchangever", obj);
+                    result = await dao.insert(this.FORGET, obj);
                 }
                 catch (err) {
                     result = { error: err };
@@ -183,10 +188,17 @@ class userManagement {
     }
     //change password
     async changePassword(req) {
-        let hashPassword = utils.encryptPassword(req.password)
-        let result = await dao.update("authUsers", { email: this.email }, { $set: { password: hashPassword } });
-        let log = await dao.delete("pwdchangever", { userName: req.userName })
-        return ("update done");
+        let verified = await dao.find(this.FORGET, { verificationCode: req.verificationCode })
+        if (verified.length) {
+            let emailObj = await dao.find(this.USERS, { userName: verified[0].userName })
+            if (emailObj.length) {
+                let hashPassword = utils.encryptPassword(req.password)
+                let result = await dao.update(this.AUTH, { email: emailObj[0].email }, { $set: { password: hashPassword } });
+                let log = await dao.delete(this.FORGET, { verificationCode: req.verificationCode })
+               return (log);
+            }
+        }
+
     }
 }
 module.exports = userManagement;

@@ -9,6 +9,7 @@
 const express = require('express')
 const cors = require('cors');
 var parser = require("body-parser");
+const session = require('express-session')
 const app = express()
 
 //const Connection = require('./connection');
@@ -22,8 +23,12 @@ const connection = new Connection();
 const dao = new Dao()
 
 const company = new Company();
-const connCollection = "userCollection";
+const connCollection = "users";
 
+const SessMan = require('./modules/user-management/session') 
+const sessManager = new SessMan()
+
+app.use(session(sessManager.init()))
 
 
 app.use(parser.json());
@@ -659,11 +664,11 @@ app.get('/rest/api/users/countConnection/:un', async (req, res) => {
 
 const UserManagement = require('./modules/user-management/user_management')
 const OrganizationManagement = require('./modules/organization-management/organization-management')
-const Session = require('./modules/user-management/session')
+
 //const dao = new Dao()
 const user = new UserManagement()
 const orgs = new OrganizationManagement()
-const sessManager = new Session()
+
 
 /*********************user signup***********************/
 app.get('/rest/api/users/get/', async (req, res) => {
@@ -679,7 +684,7 @@ app.post('/rest/api/users/add', async (req, res) => {
     res.send(result);
 })
 //after activating the link
-app.delete('/rest/api/users/activate/:userName/:link', async (req, res) => {
+app.delete('/rest/api/users/activate/:userName/:verificationCode', async (req, res) => {
     let result = await user.deleteVerifiedUser(req.params)
     res.send(result)
 })
@@ -722,15 +727,24 @@ app.patch('/rest/api/orgs/updateVerificationLink', async (req, res) => {
 //method on clicking loginIn
 app.post('/rest/api/users/signin', async (req, res) => {
     let result = await user.signin(req.body);
+    if(result == "Logged In")
+        sessManager.setUser(req, req.body.userName)
     res.send(result);
 })
+
+app.get('/rest/api/users/signout', async (req, res) => {
+    console.log(sessManager.getUser(req))
+    sessManager.resetUser(req)
+    res.send('Logged Out')
+})
+
 //method on clicking forgot password
-app.post('/rest/api/users/password', async (req, res) => {
+app.post('/rest/api/users/forget-password', async (req, res) => {
     let result = await user.forgotPassword(req.body);
     res.send(result)
 })
 //method to update new Password
-app.post('/rest/api/users/changepassword', async (req, res) => {
+app.post('/rest/api/users/change-password', async (req, res) => {
     let result = await user.changePassword(req.body);
     res.send(result)
 })
@@ -746,7 +760,7 @@ app.post('/rest/api/orgs/password', async (req, res) => {
     res.send(result)
 })
 //method to update new Password
-app.post('/rest/api/orgs/changepassword', async (req, res) => {
+app.post('/rest/api/orgs/changepassword/', async (req, res) => {
     let result = await orgs.changePassword(req.body);
     res.send(result)
 })
@@ -769,7 +783,7 @@ const search = new Search();
 const Posts = require('./modules/newsfeed/posts');
 const post = new Posts();
 
-const newsFeedCollection = "demo";              //name of my collection
+const newsFeedCollection = "users";              //name of my collection
 
 
 //Likes and Unlikes done by user
@@ -785,7 +799,8 @@ const comment = new Comment();
 //fetching the updated posts of a particular person who has logged in based on username
 app.get("/rest/api/load", async (req, res) => {
     console.log('Load Invoked');
-    let result = await newsFeed.getNewsFeed(newsFeedCollection,"dip95");//take username from session
+    userName = sessManager.getUser(req)
+    let result = await newsFeed.getNewsFeed(newsFeedCollection,userName);//take username from session
     res.send(result)
     
 })

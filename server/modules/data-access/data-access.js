@@ -13,8 +13,8 @@ const mongoClient = require('mongodb')
  */
 class Dao {
     constructor() {
-        this.URL = 'mongodb://10.102.55.82:27017/'
-        this.DB = 'linkedindemo'
+        this.URL = 'mongodb://localhost:27017'
+        this.DB = 'capmesh'
         //console.log(this.URL)
     }
 
@@ -42,6 +42,11 @@ class Dao {
         }
     }
 
+    async test(collection) {
+        let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
+        console.log("hello")
+        mongo.close()
+    }
     /**
      * To find the data from the database
      * @param {String} collection Name of the collection to fetch the data
@@ -148,3 +153,6 @@ class Dao {
 }
 
 module.exports = Dao
+
+let dao = new Dao()
+dao.test()

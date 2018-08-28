@@ -125,7 +125,7 @@ class organizationManagement{
         let result = await dao.find("organization", { name: req.name })
     if (result[0].name== req.name)
     {
-        this.email=result[0].email;
+        //this.email=result[0].email;
         let link=utils.generateVerificationLink();
         let obj={verificationCode:link,name:req.name};
         try{
@@ -142,7 +142,7 @@ class organizationManagement{
 }
 async changePassword(req) {
     let hashPassword=utils.encryptPassword(req.password)
-    let result = await dao.update("authOrgs", { email: this.email },{$set:{password:hashPassword}});
+    let result = await dao.update("authOrgs", { email: req.email },{$set:{password:hashPassword}});
     let log = await dao.delete("orgpwdchangever", { userName: req.userName})
     return ("update done");
 }

@@ -24,9 +24,7 @@ DefaultObj = {
         receive: []
     },
     connections: [],
-    followings: [],
     followingCompany: [],
-    followers: [],
 }
 
 
