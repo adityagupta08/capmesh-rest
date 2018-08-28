@@ -34,8 +34,10 @@ class SessionManager {
      * @param {Object} req Http Requrest
      * @returns {String} userName of the user logged in
      */
-    getUser(req) {
-        return req.session.user
+    getUser(req, res) {
+        if(req.session.user) 
+            return req.session.user
+        res.send("Not Logged In")
     }
 
     /**

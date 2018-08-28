@@ -603,9 +603,10 @@ app.get('/rest/api/users/get/:un', async (req, res) => {
     @desc : "This link will get the user's name and will call addAwards()"
     @author :  Shrishti
 */
-app.put('/rest/api/users/addAward/:un', async (req, res) => {
-    let result = await control.addAwards(req.params.un, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest/api/users/addAward', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.addAwards(user, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
@@ -613,9 +614,10 @@ app.put('/rest/api/users/addAward/:un', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updateAward()"
     @author :  Shrishti
 */
-app.put('/rest/api/users/changeAward/:un/:id', async (req, res) => {
-    let result = await control.updateAwards(req.params.un, req.params.id, req.body);
-    result = await control.getUserByUserName(req.params.un);
+app.put('/rest/api/users/changeAward/:awardId', async (req, res) => {
+    let user = sessManager.getUser(req, res)
+    let result = await control.updateAwards(user, req.params.awardId, req.body);
+    result = await control.getUserByUserName(user);
     res.send(result);
 });
 
