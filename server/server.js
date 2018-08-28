@@ -916,10 +916,10 @@ const comments = new Comment();
 
 
 //fetching the updated posts of a particular person who has logged in based on username
-app.get("/rest-api/load", async (req, res) => {
+app.get("/rest-api/users/post/load", async (req, res) => {
     console.log('Load Invoked');
-    userName = sessManager.getUser(req)
-    let result = await newsFeed.getNewsFeed(newsFeedCollection,userName);//take username from session
+    user = sessManager.getUser(req,res)
+    let result = await newsFeed.getNewsFeed(newsFeedCollection,user);//take username from session
     res.send(result)
     
 })
@@ -932,11 +932,12 @@ app.get("/rest-api/load", async (req, res) => {
 /**
  * @description to insert post in database by a user
 */
-app.patch('/rest-api/users/createPosts/update/:userName', async (req, res) => {
+app.patch('/rest-api/users/createPosts', async (req, res) => {
     let result;
+    let user = sessManager.getUser(req,res)
     let userName = req.params.userName;
     try {
-        result = await post.createPosts(newsFeedCollection, req.body,userName);
+        result = await post.createPosts(newsFeedCollection, req.body,user);
     }
     catch (err) {
         result = { err: err }
