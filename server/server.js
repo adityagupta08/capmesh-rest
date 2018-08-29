@@ -26,7 +26,7 @@ const company = new Company();
 const connCollection = "users";
 const orgCollection = "organizations"
 
-const SessMan = require('./modules/user-management/session') 
+const SessMan = require('./modules/user-management/session')
 const sessManager = new SessMan()
 
 app.use(session(sessManager.init()))
@@ -103,13 +103,13 @@ app.patch('/rest-api/orgs/update/verificationCode', async (req, res) => {
 //method on clicking loginIn
 app.post('/rest-api/users/login', async (req, res) => {
     let result = await user.signin(req.body);
-    if(result == "Logged In")
+    if (result == "Logged In")
         sessManager.setUser(req, req.body.userName)
     res.send(result);
 })
 
 app.get('/rest-api/users/logout', async (req, res) => {
-    console.log(sessManager.getUser(req))
+    console.log(sessManager.getUserOrError401(req))
     sessManager.resetUser(req)
     res.send('Logged Out')
 })
@@ -128,14 +128,14 @@ app.post('/rest-api/users/change-password', async (req, res) => {
 //method on clicking loginIn
 app.post('/rest-api/orgs/login', async (req, res) => {
     let result = await orgs.signin(req.body);
-    if(result == "Logged In")
+    if (result == "Logged In")
         sessManager.setUser(req, req.body.userName)
     res.send(result);
 })
 
 app.get('/rest-api/orgs/logout', async (req, res) => {
-    console.log(sessManager.getUser(req))
-        sessManager.resetUser(req)
+    console.log(sessManager.getUserOrError401(req))
+    sessManager.resetUser(req)
     res.send('Logged Out')
 })
 //method on clicking forgot password
@@ -154,7 +154,7 @@ app.post('/rest-api/orgs/change-password/', async (req, res) => {
 /**
  * @author Nandkumar
  */
-app.post('/get-all-data', async (req, res) => {
+app.post('/rest-api/user/getData', async (req, res) => {
     try {
         let result = await connection.getData(connCollection, req.body.user);
         res.end(JSON.stringify(result));
@@ -168,36 +168,34 @@ app.post('/get-all-data', async (req, res) => {
 /**
 * Getting count of connections
 */
-app.post('/get-count/connections', async (req, res) => {
-    try {
-        let result = await connection.getConnectionCount(connCollection, req.body);
-        res.end(result);
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/get-count/connections', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.getConnectionCount(connCollection, user);
+            res.end(result);
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
-// /**
-// * Getting count of followers
-// */
-// app.post('/get-count/followings', async (req, res) => {
-
-//     let result = await connection.getConnectionCount(connCollection, req.body);
-//     res.end(result)
-// })
 
 /**
  * Sending Connect request
  * (sender - receiver)
  */
-app.post('/connect', async (req, res) => {
-    try {
-        let result1 = await connection.connect(connCollection, req.body);
-        res.end("Request Sent");
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/send-invitation', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result1 = await connection.connect(connCollection, user, req.body.receiver);
+            res.end("Request Sent");
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -206,13 +204,16 @@ app.post('/connect', async (req, res) => {
  * Accepting follow request
  * (user - requester)
  */
-app.post('/accept-invitation', async (req, res) => {
-    try {
-        let result = await connection.acceptInvitation(connCollection, req.body);
-        res.end("Request Accepted");
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/accept-invitation', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.acceptInvitation(connCollection, user, req.body.requester);
+            res.end("Request Accepted");
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -221,13 +222,16 @@ app.post('/accept-invitation', async (req, res) => {
  * removing connection
  * (user - connection)
  */
-app.post('/remove-connection', async (req, res) => {
-    try {
-        let result = await connection.removeConnection(connCollection, req.body);
-        res.end("Removed");
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/remove-connection', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.removeConnection(connCollection, user, req.body.connection);
+            res.end("Removed");
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -236,13 +240,17 @@ app.post('/remove-connection', async (req, res) => {
  * Blocking connection
  * (user - blockee)
  */
-app.post('/block', async (req, res) => {
-    try {
-        let result = await connection.blockConnection(connCollection, req.body);
-        res.end("Blocked");
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/block', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.blockConnection(connCollection, user, req.body.blockee);
+            res.end("Blocked");
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
+
     }
 })
 
@@ -251,13 +259,16 @@ app.post('/block', async (req, res) => {
 * Unblocking connection
 *(user-blockee)
 */
-app.post('/unblock', async (req, res) => {
-    try {
-        let result1 = await connection.unblock(connCollection, req.body);
-        res.end("Unblocked");
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/unblock', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result1 = await connection.unblock(connCollection, user, req.body.blockee);
+            res.end("Unblocked");
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -266,13 +277,16 @@ app.post('/unblock', async (req, res) => {
  * Ignoring Invitation Received
  * (user-sender)
  */
-app.post('/ignore-invitation', async (req, res) => {
-    try {
-        let result1 = await connection.ignoreRequest(connCollection, req.body);
-        res.end("Request Ignored");
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/ignore-invitation', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result1 = await connection.ignoreRequest(connCollection, user, req.body.sender);
+            res.end("Request Ignored");
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -281,13 +295,16 @@ app.post('/ignore-invitation', async (req, res) => {
  * View Invitations Sent Count
  * (user)
  */
-app.post('/get-invitation-count/sent', async (req, res) => {
-    try {
-        let result = await connection.invitationsSentCount(connCollection, req.body);
-        res.end(JSON.stringify(result));
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/get-invitation-count/sent', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.invitationsSentCount(connCollection, user);
+            res.end(JSON.stringify(result));
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -295,13 +312,16 @@ app.post('/get-invitation-count/sent', async (req, res) => {
 /**
  * View Invitations Received Count
  */
-app.post('/get-invitation-count/received', async (req, res) => {
-    try {
-        let result = await connection.invitationsReceivedCount(connCollection, req.body);
-        res.end(JSON.stringify(result));
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/get-invitation-count/received', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.invitationsReceivedCount(connCollection, user);
+            res.end(JSON.stringify(result));
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -309,7 +329,7 @@ app.post('/get-invitation-count/received', async (req, res) => {
 /**
 * View Invitations Sent
 */
-app.post('/get-invitations/sent', async (req, res) => {
+app.post('/rest-api/user/get-invitations/sent', async (req, res) => {
     try {
         let result = await connection.invitationsSent(connCollection, req.body);
         var sentData = [];
@@ -328,19 +348,22 @@ app.post('/get-invitations/sent', async (req, res) => {
 /**
 * View Invitations Received
 */
-app.post('/get-invitations/received', async (req, res) => {
-    try {
-        let result = await connection.invitationsReceived(connCollection, req.body);
-        var receivedData = [];
-        console.log(result[0].receive.length);
-        for (let r of result[0].receive) {
+app.post('/rest-api/user/get-invitations/received', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.invitationsReceived(connCollection, user);
+            var receivedData = [];
+            console.log(result[0].receive.length);
+            for (let r of result[0].receive) {
 
-            receivedData.push(await connection.getNameAndImage(connCollection, r))
+                receivedData.push(await connection.getNameAndImage(connCollection, r))
+            }
+            res.end(JSON.stringify(receivedData));
         }
-        res.end(JSON.stringify(receivedData));
-    }
-    catch (err) {
-        res.end("Error 404");
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -348,31 +371,37 @@ app.post('/get-invitations/received', async (req, res) => {
 /**
  * View All Connections
  */
-app.post('/get-all-connections', async (req, res) => {
-    try {
-        let result = await connection.getConnectionsList(connCollection, req.body);
-        var receivedData = [];
-        console.log(result[0].connections.length);
-        for (let c of result[0].connections) {
-            receivedData.push(await connection.getNameAndImage(connCollection, c))
+app.post('/rest-api/user/get-all-connections', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.getConnectionsList(connCollection, user);
+            var receivedData = [];
+            console.log(result[0].connections.length);
+            for (let c of result[0].connections) {
+                receivedData.push(await connection.getNameAndImage(connCollection, c))
+            }
+            res.end(JSON.stringify(receivedData));
         }
-        res.end(JSON.stringify(receivedData));
-    }
-    catch (err) {
-        res.end("Error 404");
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
 /**
  * Follow a company
  */
-app.post('/follow-company', async (req, res) => {
-    try {
-        let result = await connection.followCompany(connCollection, orgCollection, req.body);
-        res.end(JSON.stringify(result));
-    }
-    catch (err) {
-        res.end("Error 404");
+app.post('/rest-api/user/follow-company', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        try {
+            let result = await connection.followCompany(connCollection, orgCollection, user, req.body.companyId);
+            res.end(JSON.stringify(result));
+        }
+        catch (err) {
+            res.end("Error 404");
+        }
     }
 })
 
@@ -383,7 +412,7 @@ app.post('/follow-company', async (req, res) => {
  * (companyId)
  * CO
  */
-app.post('/orgs/get/', async (req, res) => {
+app.post('/rest-api/user/orgs/get/', async (req, res) => {
     let result = await company.getData(orgCollection, req.body);
     res.send(result);
 })
@@ -392,10 +421,12 @@ app.post('/orgs/get/', async (req, res) => {
  * (companyId)
  * CO
  */
-app.post('/orgs/getJobList/', async (req, res) => {
-    
-    let result = await company.jobList(orgCollection, req.body);
-    res.send(result);
+app.post('/rest-api/user/orgs/getJobList/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await company.jobList(orgCollection, req.body);
+        res.send(result);
+    }
 });
 
 /**
@@ -404,10 +435,12 @@ app.post('/orgs/getJobList/', async (req, res) => {
  * CO
  */
 
-app.post('/orgs/getJob/', async (req, res) => {
-    
-    let result = await company.getJobDetails(orgCollection, req.body);
-    res.send(result);
+app.post('/rest-api/user/orgs/getJob/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await company.getJobDetails(orgCollection, req.body);
+        res.send(result);
+    }
 });
 
 /**
@@ -415,30 +448,36 @@ app.post('/orgs/getJob/', async (req, res) => {
  * (companyId, jobId, jobPosition, postDate, lastDate, applicants*)
  * CO
  */
-app.post('/orgs/postJob/', async (req, res) => {
-    let result;
-    try {
-        result = await company.addJobPost(orgCollection, req.body);
-    } 
-    catch (err) {
-        result = {"err":err};
+app.post('/rest-api/orgs/postJob/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result;
+        try {
+            result = await company.addJobPost(orgCollection, user, req.body);
+        }
+        catch (err) {
+            result = { "err": err };
+        }
+        res.send(result);
     }
-    res.send(result);
 })
 /**
  * Removing job post details
  * (companyId, jobId)
  * CO
  */
-app.post('/orgs/removeJob/', async (req, res) => {
-    let result;
-    try {
-        result = await company.removeJobPost(orgCollection, req.body);
-    } 
-    catch (err) {
-        result = {"err":err};
+app.post('/rest-api/orgs/removeJob/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result;
+        try {
+            result = await company.removeJobPost(orgCollection, user, req.body);
+        }
+        catch (err) {
+            result = { "err": err };
+        }
+        res.send(result);
     }
-    res.send(result);
 })
 
 /**
@@ -446,15 +485,18 @@ app.post('/orgs/removeJob/', async (req, res) => {
  * (companyId, postId, content)
  * CO
  */
-app.post('/orgs/add-post/', async (req, res) => {
+app.post('/rest-api/orgs/add-post/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
     let result;
     try {
-        result = await company.addPost(orgCollection, req.body);
-    } 
+        result = await company.addPost(orgCollection, companyId, req.body);
+    }
     catch (err) {
-        result = {"err":err};
+        result = { "err": err };
     }
     res.send(result);
+}
 })
 
 /**
@@ -462,24 +504,30 @@ app.post('/orgs/add-post/', async (req, res) => {
  * (companyId, postId, user)
  * CO
  */
-app.post('/orgs/like-post/', async (req, res) => {
+app.post('/rest-api/user/orgs/like-post/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
     let result;
     try {
-        result = await company.likePost(orgCollection, req.body);
-    } 
+        result = await company.likePost(orgCollection, req.body, user);
+    }
     catch (err) {
-        result = {"err":err};
+        result = { "err": err };
     }
     res.send(result);
+}
 })
 
 /**
  * List of applicants
  *  (companyId, jobId)
  */
-app.post('/orgs/applicant-list/', async (req, res) => {
-    let result = await company.applicantList(orgCollection, req.body);    
-    res.send(result);    
+app.post('/rest-api/orgs/applicant-list/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+    let result = await company.applicantList(orgCollection,user, req.body);
+    res.send(result);
+    }
 })
 
 
@@ -487,15 +535,18 @@ app.post('/orgs/applicant-list/', async (req, res) => {
  * Getting applicant count
  *  (companyId, jobId)
  */
-app.post('/orgs/applicant-count/', async (req, res) => {
+app.post('/rest-api/orgs/applicant-count/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
     let result;
     try {
-        result = await company.getApplicantCount(orgCollection, req.body)
-    } 
-    catch(err) {
-        result = {err:err}
+        result = await company.getApplicantCount(orgCollection,user, req.body)
+    }
+    catch (err) {
+        result = { err: err }
     }
     res.send(result);
+}
 });
 
 
@@ -503,15 +554,18 @@ app.post('/orgs/applicant-count/', async (req, res) => {
 *@description Add applicant to the applicant list
 * (companyId, jobId, applicant)
 */
-app.post('/orgs/add-applicant/', async (req, res) => {
+app.post('rest-api/user/orgs/add-applicant/', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
     let result;
     try {
-        result = await company.addApplicantToList(orgCollection, req.body)
-    } 
-    catch(err) {
-        result = {err:err}
+        result = await company.addApplicantToList(orgCollection, req.body, user)
+    }
+    catch (err) {
+        result = { err: err }
     }
     res.send(result);
+}
 });
 
 //_---------------------------------------------------------//
@@ -604,10 +658,12 @@ app.get('/rest-api/users/get/:un', async (req, res) => {
     @author :  Shrishti
 */
 app.put('/rest-api/users/addAward', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.addAwards(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.addAwards(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -615,10 +671,12 @@ app.put('/rest-api/users/addAward', async (req, res) => {
     @author :  Shrishti
 */
 app.put('/rest-api/users/changeAward/:awardId', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.updateAwards(user, req.params.awardId, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.updateAwards(user, req.params.awardId, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -626,10 +684,12 @@ app.put('/rest-api/users/changeAward/:awardId', async (req, res) => {
     @author :  Parag Badala
 */
 app.put('/rest-api/users/removeAward/:awardId', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.removeAwards(user, req.params.awardId);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.removeAwards(user, req.params.awardId);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -637,10 +697,12 @@ app.put('/rest-api/users/removeAward/:awardId', async (req, res) => {
     @author :  Dipmalya Sen
 */
 app.put('/rest-api/users/addCertificate', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.addCertifications(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.addCertifications(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -649,10 +711,12 @@ app.put('/rest-api/users/addCertificate', async (req, res) => {
 */
 
 app.put('/rest-api/users/changeCertificate/:certificateId', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.updateCertifications(user, req.params.certificateId, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.updateCertifications(user, req.params.certificateId, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -661,10 +725,12 @@ app.put('/rest-api/users/changeCertificate/:certificateId', async (req, res) => 
 */
 
 app.put('/rest-api/users/removeCertificate/:certificateId', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.removeCertifications(user, req.params.certificateId);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.removeCertifications(user, req.params.certificateId);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -673,10 +739,12 @@ app.put('/rest-api/users/removeCertificate/:certificateId', async (req, res) => 
 */
 
 app.put('/rest-api/users/addPublication', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.addPublications(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.addPublications(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -685,10 +753,12 @@ app.put('/rest-api/users/addPublication', async (req, res) => {
 */
 
 app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.updatePublications(user, req.params.publicationId, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.updatePublications(user, req.params.publicationId, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -697,10 +767,12 @@ app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => 
 */
 
 app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.removePublications(user, req.params.publicationId, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.removePublications(user, req.params.publicationId, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -709,10 +781,12 @@ app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => 
 */
 
 app.put('/rest-api/users/addEndorsement', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.addEndorsement(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.addEndorsement(user, req.body);
+        result = await control.getUserByUserName(req.body.user);
+        res.send(result);
+    }
 });
 
 /*
@@ -721,10 +795,12 @@ app.put('/rest-api/users/addEndorsement', async (req, res) => {
 */
 
 app.put('/rest-api/users/addSkill/:skill', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.addSkill(user, req.params.skill);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.addSkill(user, req.params.skill);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -733,10 +809,12 @@ app.put('/rest-api/users/addSkill/:skill', async (req, res) => {
 */
 
 app.put('/rest-api/users/deleteSkill/:skill', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.deleteSkill(user, req.params.skill);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.deleteSkill(user, req.params.skill);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -745,10 +823,12 @@ app.put('/rest-api/users/deleteSkill/:skill', async (req, res) => {
 */
 
 app.put('/rest-api/users/updateBio', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.updateBio(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.updateBio(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -757,10 +837,12 @@ app.put('/rest-api/users/updateBio', async (req, res) => {
 */
 
 app.put('/rest-api/users/addExperience', async (req, res) => {
-    let user = sessManager.getUser(req, res)
-    let result = await control.addExperience(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.addExperience(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -769,9 +851,12 @@ app.put('/rest-api/users/addExperience', async (req, res) => {
 */
 
 app.put('/rest-api/users/updateExperience/:experienceId', async (req, res) => {
-    let result = await control.updateExperience(user, req.params.experienceId, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = await control.updateExperience(user, req.params.experienceId, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -780,10 +865,12 @@ app.put('/rest-api/users/updateExperience/:experienceId', async (req, res) => {
 */
 
 app.put('/rest-api/users/removeExperience/:experienceId', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.removeExperience(user, req.params.experienceId);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.removeExperience(user, req.params.experienceId);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -792,10 +879,12 @@ app.put('/rest-api/users/removeExperience/:experienceId', async (req, res) => {
 */
 
 app.put('/rest-api/users/addEducation', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.addEducation(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.addEducation(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -804,10 +893,12 @@ app.put('/rest-api/users/addEducation', async (req, res) => {
 */
 
 app.put('/rest-api/users/updateEducation/:educationId', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.updateEducation(user, req.params.educationId, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.updateEducation(user, req.params.educationId, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -816,10 +907,12 @@ app.put('/rest-api/users/updateEducation/:educationId', async (req, res) => {
 */
 
 app.put('/rest-api/users/removeEducation/:educationId', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.removeEducation(user, req.params.educationId);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.removeEducation(user, req.params.educationId);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -828,9 +921,11 @@ app.put('/rest-api/users/removeEducation/:educationId', async (req, res) => {
 */
 
 app.get('/rest-api/users/countConnection', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.countConnection(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.countConnection(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -839,10 +934,12 @@ app.get('/rest-api/users/countConnection', async (req, res) => {
 */
 
 app.put('/rest-api/users/updateName', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.updateName(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result)
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.updateName(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result)
+    }
 });
 
 /*
@@ -852,10 +949,12 @@ app.put('/rest-api/users/updateName', async (req, res) => {
 
 
 app.put('/rest-api/users/updateDob', async (req, res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.updateDOB(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.updateDOB(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result);
+    }
 });
 
 /*
@@ -863,11 +962,13 @@ app.put('/rest-api/users/updateDob', async (req, res) => {
     @author :  Parag Badala
 */
 
-app.put('/rest-api/users/updateEmail', async (req,res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.updateEmail(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result)
+app.put('/rest-api/users/updateEmail', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.updateEmail(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result)
+    }
 });
 
 /*
@@ -875,11 +976,13 @@ app.put('/rest-api/users/updateEmail', async (req,res) => {
     @author :  Parag Badala
 */
 
-app.put('/rest-api/users/updateMobile', async (req,res) => {
-    let user = sessManager.getUser(req, res);
-    let result = await control.updateMobile(user, req.body);
-    result = await control.getUserByUserName(user);
-    res.send(result)
+app.put('/rest-api/users/updateMobile', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await control.updateMobile(user, req.body);
+        result = await control.getUserByUserName(user);
+        res.send(result)
+    }
 });
 
 
@@ -918,10 +1021,10 @@ const comments = new Comment();
 //fetching the updated posts of a particular person who has logged in based on username
 app.get("/rest-api/users/post/load", async (req, res) => {
     console.log('Load Invoked');
-    user = sessManager.getUser(req,res)
-    let result = await newsFeed.getNewsFeed(newsFeedCollection,user);//take username from session
+    user = sessManager.getUserOrError401(req, res)
+    let result = await newsFeed.getNewsFeed(newsFeedCollection, user);//take username from session
     res.send(result)
-    
+
 })
 
 
@@ -934,10 +1037,10 @@ app.get("/rest-api/users/post/load", async (req, res) => {
 */
 app.patch('/rest-api/users/createPosts', async (req, res) => {
     let result;
-    let user = sessManager.getUser(req,res)
+    let user = sessManager.getUserOrError401(req, res)
     let userName = req.params.userName;
     try {
-        result = await post.createPosts(newsFeedCollection, req.body,user);
+        result = await post.createPosts(newsFeedCollection, req.body, user);
     }
     catch (err) {
         result = { err: err }
@@ -953,7 +1056,7 @@ app.patch('/rest-api/users/editPosts/update/:userName/:postId', async (req, res)
     let userName = req.params.userName;
     let postId = req.params.postId;
     try {
-        result = await post.editPosts(newsFeedCollection, req.body,userName,postId);
+        result = await post.editPosts(newsFeedCollection, req.body, userName, postId);
     }
     catch (err) {
         result = { err: err }
@@ -969,7 +1072,7 @@ app.patch('/rest-api/users/deletePosts/update/:userName/:postId', async (req, re
     let userName = req.params.userName;
     let postId = req.params.postId;
     try {
-        result = await post.deletePosts(newsFeedCollection, userName,postId);
+        result = await post.deletePosts(newsFeedCollection, userName, postId);
     }
     catch (err) {
         result = { err: err }
@@ -983,7 +1086,7 @@ app.patch('/rest-api/users/deletePosts/update/:userName/:postId', async (req, re
 app.patch('/rest-api/users/searchPeople/', async (req, res) => {
     let result;
     try {
-        result = await search.searchPeople(newsFeedCollection,req.body.query);
+        result = await search.searchPeople(newsFeedCollection, req.body.query);
     }
     catch (err) {
         result = { err: err }
@@ -997,7 +1100,7 @@ app.patch('/rest-api/users/searchPeople/', async (req, res) => {
 app.patch('/rest-api/users/searchCompanies/', async (req, res) => {
     let result;
     try {
-        result = await search.searchCompanies(newsFeedCollection,req.body.query);
+        result = await search.searchCompanies(newsFeedCollection, req.body.query);
     }
     catch (err) {
         result = { err: err }
@@ -1010,31 +1113,31 @@ app.patch('/rest-api/users/searchCompanies/', async (req, res) => {
 app.post('/getLike', async (req, res) => {
     let result
     try {
-        var store=req.body;
-        result = await likes.getLike(connCollection,store.userName,store.postId,store.likedByName)
-    } 
+        var store = req.body;
+        result = await likes.getLike(connCollection, store.userName, store.postId, store.likedByName)
+    }
     catch (err) {
-        result = {err:err}
-    } 
+        result = { err: err }
+    }
     res.send(result)
 })
 
 app.post('/removeLike', async (req, res) => {
     let result
     try {
-        var store=req.body;
-        result = await likes.removeLike(connCollection,store.userName,store.postId,store.likedByName)
-    } 
+        var store = req.body;
+        result = await likes.removeLike(connCollection, store.userName, store.postId, store.likedByName)
+    }
     catch (err) {
-        result = {err:err}
-    } 
+        result = { err: err }
+    }
     res.send(result)
 })
 
 app.get('/getLikesdetails/:postId', async (req, res) => {
-    var id=req.params.postId
-    
-    let result = await likes.getLikesDetails(connCollection,id)
+    var id = req.params.postId
+
+    let result = await likes.getLikesDetails(connCollection, id)
     res.send(result)
 })
 
@@ -1063,7 +1166,7 @@ app.put('/updateComments/:userName/:postId', async (req, res) => {
 
     try {
         let result = await comments.postComments(newsFeedCollection, userName, postId, req.body)
-        
+
         res.send(result)
     }
     catch (err) {

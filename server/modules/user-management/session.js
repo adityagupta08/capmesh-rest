@@ -34,10 +34,14 @@ class SessionManager {
      * @param {Object} req Http Requrest
      * @returns {String} userName of the user logged in
      */
-    getUser(req, res) {
+    getUserOrError401(req, res) {
         if(req.session.user) 
             return req.session.user
-        res.send("Not Logged In")
+        else
+        {
+            res.status(401).send("UNAUTHORIZED")
+            return undefined
+        }
     }
 
     /**

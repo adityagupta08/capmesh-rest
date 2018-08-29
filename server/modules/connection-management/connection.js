@@ -48,8 +48,8 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {number} result (count of connections)
      */
-    async getConnectionCount(collections, queryData) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connections" } } } }]);
+    async getConnectionCount(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connections" } } } }]);
         // console.log(result);
         return (result[0].count.toString());
     }
@@ -62,10 +62,9 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {object} result 
      */
-    async connect(collections, queryData) {
-        console.log(queryData);
-        let result = await dao.update(collections, { userName: queryData.sender }, { $push: { "connectionRequests.sent": queryData.receiver } });
-        let res = await dao.update(collections, { userName: queryData.receiver }, { $push: { "connectionRequests.receive": queryData.sender } });
+    async connect(collections, sender, receiver) {
+        let result = await dao.update(collections, { userName: sender }, { $push: { "connectionRequests.sent": receiver } });
+        let res = await dao.update(collections, { userName: receiver }, { $push: { "connectionRequests.receive": sender } });
         return (result);
     }
 
@@ -77,12 +76,12 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {object} result
      */
-    async acceptInvitation(collections, queryData) {
+    async acceptInvitation(collections, user, requester) {
         console.log(queryData);
-        let result = await dao.update(collections, { userName: queryData.user }, { $pull: { "connectionRequests.receive": queryData.requester } });
-        let res = await dao.update(collections, { userName: queryData.user }, { $push: { "connections": queryData.requester } });
-        res = await dao.update(collections, { userName: queryData.requester }, { $pull: { "connectionRequests.sent": queryData.user } });
-        res = await dao.update(collections, { userName: queryData.requester }, { $push: { "connections": queryData.user } });
+        let result = await dao.update(collections, { userName: user }, { $pull: { "connectionRequests.receive": requester } });
+        let res = await dao.update(collections, { userName: user }, { $push: { "connections": requester } });
+        res = await dao.update(collections, { userName: requester }, { $pull: { "connectionRequests.sent": user } });
+        res = await dao.update(collections, { userName: requester }, { $push: { "connections": user } });
         return (result);
     }
 
@@ -94,11 +93,10 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {object} result
      */
-    //async unfollowConnection(collections, queryData) {
-    async removeConnection(collections, queryData) {
+    async removeConnection(collections, user, connection) {
         console.log(queryData);
-        let result = await dao.update(collections, { userName: queryData.user }, { $pull: { "connections": queryData.connection } });
-        let res = await dao.update(collections, { userName: queryData.connection }, { $pull: { "connections": queryData.user } });
+        let result = await dao.update(collections, { userName: user }, { $pull: { "connections": connection } });
+        let res = await dao.update(collections, { userName: connection }, { $pull: { "connections": user } });
         return (result);
     }
 
@@ -110,10 +108,10 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {object} result
      */
-    async blockConnection(collections, queryData) {
+    async blockConnection(collections, user, blockee) {
         //console.log(queryData);
-        let result = await dao.update(collections, { userName: queryData.user }, { $push: { "blocklist.blocked": queryData.blockee } });
-        let res = await dao.update(collections, { userName: queryData.blockee }, { $push: { "blocklist.blockedBy": queryData.user } });
+        let result = await dao.update(collections, { userName: user }, { $push: { "blocklist.blocked": blockee } });
+        let res = await dao.update(collections, { userName: blockee }, { $push: { "blocklist.blockedBy": user } });
 
         return (result);
     }
@@ -125,10 +123,10 @@ class Connections {
     * @param {string} collections name of collection
     * @param {object} queryData data to be passed in the query
     */
-    async unblock(collections, queryData) {
+    async unblock(collections,user, blockee) {
         //console.log(queryData);
-        let result = await dao.update(collections, { userName: queryData.user }, { $pull: { "blocklist.blocked": queryData.blockee } });
-        let res = await dao.update(collections, { userName: queryData.blockee }, { $pull: { "blocklist.blockedBy": queryData.user } });
+        let result = await dao.update(collections, { userName: user }, { $pull: { "blocklist.blocked": blockee } });
+        let res = await dao.update(collections, { userName: blockee }, { $pull: { "blocklist.blockedBy": user } });
     }
 
 
@@ -139,10 +137,10 @@ class Connections {
      * @param {string} collections name of collection
      * @param {object} queryData data to be passed in the query
      */
-    async ignoreRequest(collections, queryData) {
+    async ignoreRequest(collections, user, sender) {
         //console.log(queryData);
-        let result = await dao.update(collections, { userName: queryData.user }, { $pull: { "connectionRequests.receive": queryData.sender } });
-        let res = await dao.update(collections, { userName: queryData.sender }, { $pull: { "connectionRequests.sent": queryData.user } });
+        let result = await dao.update(collections, { userName: user }, { $pull: { "connectionRequests.receive": sender } });
+        let res = await dao.update(collections, { userName: sender }, { $pull: { "connectionRequests.sent": user } });
     }
 
 
@@ -154,8 +152,8 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {number} result 
      */
-    async invitationsSentCount(collections, queryData) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connectionRequests.sent" } } } }]);
+    async invitationsSentCount(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connectionRequests.sent" } } } }]);
         return (result[0].count.toString());
     }
 
@@ -167,8 +165,8 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {number} result
      */
-    async invitationsReceivedCount(collections, queryData) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connectionRequests.receive" } } } }]);
+    async invitationsReceivedCount(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$connectionRequests.receive" } } } }]);
         return (result[0].count.toString());
     }
 
@@ -193,8 +191,8 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {number} result
      */
-    async invitationsReceived(collections, queryData) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $project: { receive: "$connectionRequests.receive" } }]);
+    async invitationsReceived(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $project: { receive: "$connectionRequests.receive" } }]);
         return (result);
     }
 
@@ -207,8 +205,8 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {name} result
      */
-    async getConnectionsList(collections, queryData) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $project: { connections: "$connections" } }]);
+    async getConnectionsList(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $project: { connections: "$connections" } }]);
         return (result);
     }
 
@@ -220,9 +218,9 @@ class Connections {
         * @param {object} queryData data to be passed in the query
         * @returns {name} result
         */
-    async followCompany(userCollection, orgCollection, queryData) {
-        let result = await dao.update(userCollection, { userName: queryData.user }, { $push: { "followingCompany": queryData.companyId } });
-        result = await dao.update(orgCollection, { companyID: queryData.companyId }, { $push: { "profile.followers": queryData.user } });
+    async followCompany(userCollection, orgCollection, user, companyId) {
+        let result = await dao.update(userCollection, { userName: user }, { $push: { "followingCompany": companyId } });
+        result = await dao.update(orgCollection, { companyID: companyId }, { $push: { "profile.followers": user } });
         return (result);
     }
 }
