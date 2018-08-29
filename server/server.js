@@ -5,7 +5,8 @@
  * 
  * Service layer to interact with the frontend
  */
-
+const env = require('dotenv')
+env.load()
 const express = require('express')
 const cors = require('cors');
 var parser = require("body-parser");
@@ -41,38 +42,46 @@ const UserManagement = require('./modules/user-management/user_management')
 const OrganizationManagement = require('./modules/organization-management/organization-management')
 
 //const dao = new Dao()
-const user = new UserManagement()
+const users = new UserManagement()
 const orgs = new OrganizationManagement()
 
 
 /*********************user signup***********************/
-
-app.get('/rest-api/users/get/', async (req, res) => {
-    let result = await user.findAll();
+app.get('/rest-api/users/get', async (req, res) => {
+    let result = await users.findAll();
     res.send(result)
 })
 app.use(parser.json());
 
 //method on clicking signUp 
+/**
+ * @required @tested
+ */
 /*
     name,  userName,  password,  email,  mobile,  dateOfBirth,  gender,
  */
 app.post('/rest-api/users/signup', async (req, res) => {
-    let authData = await user.authInsert(req.body);
-    let result = await user.signupInsert(req.body);
-    let verifyUser = await user.verifyInsert(req.body);
+    let authData = await users.authInsert(req.body);
+    let result = await users.signupInsert(req.body);
+    let verifyUser = await users.verifyInsert(req.body);
     res.send(result);
 })
 
+/**
+ * @required @tested
+ */
 //To activate the account
 app.delete('/rest-api/users/activate/:userName/:verificationCode', async (req, res) => {
-    let result = await user.deleteVerifiedUser(req.params)
+    let result = await users.deleteVerifiedUser(req.params)
     res.send(result)
 })
 
+/**
+ * @required @tested
+ */
 //updated Code for verification
 app.patch('/rest-api/users/update/verificationCode', async (req, res) => {
-    let result = await user.updateVerifyCode(req.body)
+    let result = await users.updateVerifyCode(req.body.userName)
     res.send(result)
 })
 
@@ -83,6 +92,9 @@ app.get('/rest-api/orgs/get', async (req, res) => {
 })
 app.use(parser.json());
 //method on clicking signUp 
+/**
+ * @required @tested
+ */
 app.post('/rest-api/orgs/signup', async (req, res) => {
     let authData = await orgs.authInsert(req.body);
     let result = await orgs.signupInsert(req.body);
@@ -90,35 +102,41 @@ app.post('/rest-api/orgs/signup', async (req, res) => {
     res.send(verifyUser)
 })
 //after activating the link
+/**
+ * @required @tested
+ */
 app.delete('/rest-api/orgs/activate/:companyID/:verificationCode', async (req, res) => {
     let result = await orgs.deleteVerifiedUser(req.params)
     res.send(result)
 })
 
 //updated link for verification
+/**
+ * @required @tested
+ */
 app.patch('/rest-api/orgs/update/verificationCode', async (req, res) => {
-    let result = await orgs.updateVerifyCode(req.body)
+    let result = await orgs.updateVerifyCode(req.body.companyID)
     res.send(result)
 })
 
 /*
 //method on clicking signUp 
 app.post('/rest/api/users/add', async (req, res) => {
-    let authData = await user.authInsert(req.body);
-    let result = await user.signupInsert(req.body);  
-    let verifyUser = await user.verifyInsert(req.body);
-    let verficationData = await user.findVerificationData(req.body);
+    let authData = await users.authInsert(req.body);
+    let result = await users.signupInsert(req.body);  
+    let verifyUser = await users.verifyInsert(req.body);
+    let verficationData = await users.findVerificationData(req.body);
     res.send(verficationData);
 })
 //unique username check
 app.post('/rest/api/users/uniqueUserName', async (req, res) => {
-    let isUnique = await user.uniqueUserName(req.body);
+    let isUnique = await users.uniqueUserName(req.body);
     res.send(isUnique);
 })
 
 //unique email check
 app.post('/rest/api/users/uniqueEmail', async (req, res) => {
-    let isUnique = await user.uniqueEmail(req.body);
+    let isUnique = await users.uniqueEmail(req.body);
     res.send(isUnique);
 })
 
@@ -129,7 +147,7 @@ app.post('/rest/api/orgs/add', async (req, res) => {
     let authData = await orgs.authInsert(req.body);
     let result = await orgs.signupInsert(req.body);  
     let verifyUser = await orgs.verifyInsert(req.body);
-    let verficationData = await user.findVerificationData(req.body);
+    let verficationData = await users.findVerificationData(req.body);
     res.send(verifyUser)
 })
 */
@@ -137,31 +155,61 @@ app.post('/rest/api/orgs/add', async (req, res) => {
 /*********************login***********************/
 /*********************users**********************/
 //method on clicking login
-app.post('/rest-api/users/login', async (req, res) => {
-    let result = await user.signin(req.body);
+/**
+ * @required @tested
+ */
+app.post('/rest-api/user/login', async (req, res) => {
+    let result = await users.signin(req.body);
     if (result == "Logged In")
         sessManager.setUser(req, req.body.userName)
     res.send(result);
 })
 
-app.post('/rest-api/users/logout', async (req, res) => {
-    console.log(sessManager.getUserOrError401(req))
+/**
+ * @required @tested
+ */
+app.post('/rest-api/user/logout', async (req, res) => {
+    console.log(sessManager.getUserOrError401(req, res))
     sessManager.resetUser(req)
     res.send('Logged Out')
 })
 
 //method on clicking forgot password
-app.post('/rest-api/users/forget-password', async (req, res) => {
-    let result = await user.forgotPassword(req.body);
+/**
+ * @required @tested
+ */
+app.post('/rest-api/user/forget-password', async (req, res) => {
+    let result = await users.forgotPassword(req.body);
     res.send(result)
 })
+
+
 //method to update new Password
-app.post('/rest-api/users/change-password/:userName/:verificationCode', async (req, res) => {
-    let result = await user.changePassword(req.params.verificationCode);
+/**
+ * @required @tested
+ */
+app.patch('/rest-api/user/change-password/:userName/:verificationCode', async (req, res) => {
+    let result = await users.changePassword(req.params.userName,req.params.verificationCode,
+                                            req.body.password);
     res.send(result)
+})
+
+//method to change password for logged In user
+/**
+ * @required @tested
+ */
+app.patch('/rest-api/user/update-password', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res) 
+    if(user) {
+        let result = await users.updatePassword(user, req.body.password)
+        res.send(result)
+    }
 })
 /****************************org**************************/
 //method on clicking loginIn
+/**
+ * @required @tested
+ */
 app.post('/rest-api/orgs/login', async (req, res) => {
     let result = await orgs.signin(req.body);
     if (result == "Logged In")
@@ -169,22 +217,46 @@ app.post('/rest-api/orgs/login', async (req, res) => {
     res.send(result);
 })
 
+/**
+ * @required @tested
+ */
 app.post('/rest-api/orgs/logout', async (req, res) => {
     console.log(sessManager.getUserOrError401(req))
     sessManager.resetUser(req)
     res.send('Logged Out')
 })
+
 //method on clicking forgot password
+/**
+ * @required @tested
+ */
 app.post('/rest-api/orgs/forget-password', async (req, res) => {
     let result = await orgs.forgotPassword(req.body);
     res.send(result)
 })
+
 //method to update new Password
-app.post('/rest-api/orgs/change-password/', async (req, res) => {
-    let result = await orgs.changePassword(req.body);
+/**
+ * @required @tested
+ */
+app.patch('/rest-api/orgs/change-password/:companyID/:verificationCode', async (req, res) => {
+    let result = await orgs.changePassword(req.params.companyID,req.params.verificationCode,
+                                                req.body.password);
     res.send(result)
 })
 
+
+//method to change password for logged In org
+/**
+ * @required @tested
+ */
+app.patch('/rest-api/orgs/update-password', async (req, res) => {
+    let user = sessManager.getUserOrError401(req, res) 
+    if(user) {
+        let result = await orgs.updatePassword(user, req.body.password)
+        res.send(result)
+    }
+})
 
 
 /**
@@ -222,6 +294,9 @@ app.post('/rest-api/user/get-count/connections', async (req, res) => {
  * Sending Connect request
  * (receiver)
  */
+/**
+ * @required
+ */
 app.post('/rest-api/user/send-invitation', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -239,6 +314,9 @@ app.post('/rest-api/user/send-invitation', async (req, res) => {
 /**
  * Accepting follow request
  * (user - requester)
+ */
+/**
+ * @required
  */
 app.post('/rest-api/user/accept-invitation', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
@@ -260,6 +338,9 @@ app.post('/rest-api/user/accept-invitation', async (req, res) => {
  * removing connection
  * (user - connection)
  */
+/**
+ * @required
+ */
 app.post('/rest-api/user/remove-connection', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -277,6 +358,9 @@ app.post('/rest-api/user/remove-connection', async (req, res) => {
 /**
  * Blocking connection
  * (user - blockee)
+ */
+/**
+ * @required
  */
 app.post('/rest-api/user/block', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
@@ -297,6 +381,9 @@ app.post('/rest-api/user/block', async (req, res) => {
 * Unblocking connection
 *(user-blockee)
 */
+/**
+ * @required
+ */
 app.post('/rest-api/user/unblock', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -314,6 +401,9 @@ app.post('/rest-api/user/unblock', async (req, res) => {
 /**
  * Ignoring Invitation Received
  * (sender)
+ */
+/**
+ * @required
  */
 app.post('/rest-api/user/ignore-invitation', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
@@ -429,6 +519,9 @@ app.post('/rest-api/user/get-all-connections', async (req, res) => {
 
 /**
  * Follow a company
+ */
+/**
+ * @required
  */
 app.post('/rest-api/user/follow-company', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
@@ -623,7 +716,9 @@ const chats = new Chats();
   "receiver":102,
   "content":"Hello"
 }*/
-
+/**
+ * @required
+ */
 app.post('/rest-api/chats/addChatsBetweenUsers', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -650,7 +745,9 @@ app.post('/rest-api/chats/addChatsBetweenUsers', async (req, res) => {
 {
   "user2":102
 }*/
-
+/**
+ * @required
+ */
 app.post('/rest-api/chats/getchatsBetweenUsers', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -677,7 +774,9 @@ app.delete('/rest-api/chats/deleteSingleMessage', async (req, res) => {
 
 //gets the users and the last message the given user has conversed with
 /*The format of req body for hasConversationsWith */
-
+/**
+ * @required
+ */
 app.post('/rest-api/chats/hasConversationsWith', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -698,6 +797,9 @@ var control = new Controller();
     @desc : "This link will get the user's name and will call getUserByUserName()"
     @author :  Shrishti 
 */
+/**
+ * @required
+ */
 app.get('/rest-api/users/get/:un', async (req, res) => {
     let result = await control.getUserByUserName(req.params.un);
     res.send(result);
@@ -707,6 +809,9 @@ app.get('/rest-api/users/get/:un', async (req, res) => {
     @desc : "This link will get the user's name and will call addAwards()"
     @author :  Shrishti
 */
+/**
+ * @required
+ */
 app.put('/rest-api/users/addAward', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -720,6 +825,9 @@ app.put('/rest-api/users/addAward', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updateAward()"
     @author :  Shrishti
 */
+/**
+ * @required
+ */
 app.put('/rest-api/users/changeAward/:awardId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -733,6 +841,9 @@ app.put('/rest-api/users/changeAward/:awardId', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call removeAwards()"
     @author :  Parag Badala
 */
+/**
+ * @required
+ */
 app.put('/rest-api/users/removeAward/:awardId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -746,6 +857,9 @@ app.put('/rest-api/users/removeAward/:awardId', async (req, res) => {
     @desc : "This link will get the user's name and will call addCertifications()"
     @author :  Dipmalya Sen
 */
+/**
+ * @required
+ */
 app.put('/rest-api/users/addCertificate', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -759,7 +873,9 @@ app.put('/rest-api/users/addCertificate', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updateCertifications()"
     @author :  Dipmalya Sen
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/changeCertificate/:certificateId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -773,7 +889,9 @@ app.put('/rest-api/users/changeCertificate/:certificateId', async (req, res) => 
     @desc : "This link will get the user's name and user Id and will call removeCertifications()"
     @author :  Himani Jain
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/removeCertificate/:certificateId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -787,7 +905,9 @@ app.put('/rest-api/users/removeCertificate/:certificateId', async (req, res) => 
     @desc : "This link will get the user's name and will call addpublications()"
     @author :  Himani Jain
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/addPublication', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -801,7 +921,9 @@ app.put('/rest-api/users/addPublication', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updatePublications()"
     @author :  Lalithya Satya
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -815,7 +937,9 @@ app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => 
     @desc : "This link will get the user's name and user Id and will call removePublications()"
     @author :  Lalithya Satya
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -829,7 +953,9 @@ app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => 
     @desc : "This link will get the user's name and will call addEndorsement()"
     @author :  Soumyodipta Majumdar
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/addEndorsement', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -843,7 +969,9 @@ app.put('/rest-api/users/addEndorsement', async (req, res) => {
     @desc : "This link will get the user's name and skill and will call addSkill()"
     @author :  Soumyodipta Majumdar
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/addSkill/:skill', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -857,7 +985,9 @@ app.put('/rest-api/users/addSkill/:skill', async (req, res) => {
     @desc : "This link will get the user's name and skill and will call deleteSkill()"
     @author :  Somya Burman
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/deleteSkill/:skill', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -871,7 +1001,9 @@ app.put('/rest-api/users/deleteSkill/:skill', async (req, res) => {
     @desc : "This link will get the user's name and will call updateBio()"
     @author :  Somya Burman
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/updateBio', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -885,7 +1017,9 @@ app.put('/rest-api/users/updateBio', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call addExperience()"
     @author :  Anubha Joshi
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/addExperience', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -899,7 +1033,9 @@ app.put('/rest-api/users/addExperience', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updateExperience()"
     @author :  Anubha Joshi
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/updateExperience/:experienceId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
@@ -913,7 +1049,9 @@ app.put('/rest-api/users/updateExperience/:experienceId', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call removeExperience()"
     @author :  Veshnavee 
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/removeExperience/:experienceId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -927,7 +1065,9 @@ app.put('/rest-api/users/removeExperience/:experienceId', async (req, res) => {
     @desc : "This link will get the user's name and will call addEducation()"
     @author :  Veshnavee 
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/addEducation', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -941,7 +1081,9 @@ app.put('/rest-api/users/addEducation', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call updateEducation()"
     @author :  Supriya Patil
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/updateEducation/:educationId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -955,7 +1097,9 @@ app.put('/rest-api/users/updateEducation/:educationId', async (req, res) => {
     @desc : "This link will get the user's name and user Id and will call removeEducation()"
     @author :  Supriya Patil
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/removeEducation/:educationId', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -982,7 +1126,9 @@ app.get('/rest-api/users/countConnection', async (req, res) => {
     @desc : "This link will get the user's name and will call updateName()"
     @author :  Somya Burman
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/updateName', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -997,7 +1143,9 @@ app.put('/rest-api/users/updateName', async (req, res) => {
     @author :  Parag Badala
 */
 
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/updateDob', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1025,7 +1173,9 @@ app.put('/rest-api/users/updateEmail', async (req, res) => {
     @desc : "This link will get the user's name and will call updateMobile()"
     @author :  Parag Badala
 */
-
+/**
+ * @required
+ */
 app.put('/rest-api/users/updateMobile', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1069,6 +1219,9 @@ const comments = new Comment();
 
 
 //fetching the updated posts of a particular person who has logged in based on username
+/**
+ * @required
+ */
 app.get("/rest-api/users/post/load", async (req, res) => {
     //console.log('Load Invoked');
     let user = sessManager.getUserOrError401(req, res);
@@ -1087,7 +1240,10 @@ app.get("/rest-api/users/post/load", async (req, res) => {
  * content
  * @description to insert post in database by a user
 */
-app.patch('/rest-api/users/createPosts', async (req, res) => {
+/**
+ * @required
+ */
+app.patch('/rest-api/users/create/post', async (req, res) => {
     let result;
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1104,7 +1260,10 @@ app.patch('/rest-api/users/createPosts', async (req, res) => {
 /**
  * @description to edit post inserted in the database by the user
  */
-app.patch('/rest-api/users/editPosts/update/:postId', async (req, res) => {
+/**
+ * @required
+ */
+app.patch('/rest-api/users/edit/post/:postId', async (req, res) => {
     let result;
     let postId = req.params.postId;
     let user = sessManager.getUserOrError401(req, res);
@@ -1122,7 +1281,10 @@ app.patch('/rest-api/users/editPosts/update/:postId', async (req, res) => {
 /**
  * @description to delete post inserted in the database by the user
  */
-app.patch('/rest-api/users/deletePosts/update/:postId', async (req, res) => {
+/**
+ * @required
+ */
+app.patch('/rest-api/users/delete/posts/:postId', async (req, res) => {
     let result
     let postId = req.params.postId;
     let user = sessManager.getUserOrError401(req, res);
@@ -1140,7 +1302,10 @@ app.patch('/rest-api/users/deletePosts/update/:postId', async (req, res) => {
 /**
  * @description to search people in the database by the user
  */
-app.patch('/rest-api/users/searchPeople', async (req, res) => {
+/**
+ * @required
+ */
+app.patch('/rest-api/users/search/people', async (req, res) => {
     let result;
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1157,7 +1322,10 @@ app.patch('/rest-api/users/searchPeople', async (req, res) => {
 /**
  * @description to search companies in the database by the user
  */
-app.patch('/rest-api/users/searchCompanies', async (req, res) => {
+/**
+ * @required
+ */
+app.patch('/rest-api/users/search/companies', async (req, res) => {
     let result;
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1173,7 +1341,10 @@ app.patch('/rest-api/users/searchCompanies', async (req, res) => {
 
 
 //Likes and dislikes
-app.post('/rest-api/users/post/getLike', async (req, res) => {
+/**
+ * @required
+ */
+app.post('/rest-api/users/post/like', async (req, res) => {
     let result
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1188,7 +1359,10 @@ app.post('/rest-api/users/post/getLike', async (req, res) => {
     }
 })
 
-app.post('/rest-api/users/post/removeLike', async (req, res) => {
+/**
+ * @required
+ */
+app.post('/rest-api/users/post/unike', async (req, res) => {
     let result
     let user = sessManager.getUserOrError401(req, res);
     if (user) {
@@ -1246,8 +1420,6 @@ app.put('/rest-api/users/post/updateComments/:uName/:postId', async (req, res) =
         }
     }
 })
-
-
 
 
 //-------------------------END-----------------------------//

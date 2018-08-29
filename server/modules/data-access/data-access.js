@@ -42,11 +42,7 @@ class Dao {
         }
     }
 
-    async test(collection) {
-        let mongo = await mongoClient.connect(this.URL, { useNewUrlParser: true })
-        console.log("hello")
-        mongo.close()
-    }
+    
     /**
      * To find the data from the database
      * @param {String} collection Name of the collection to fetch the data
@@ -153,6 +149,3 @@ class Dao {
 }
 
 module.exports = Dao
-
-let dao = new Dao()
-dao.test()
