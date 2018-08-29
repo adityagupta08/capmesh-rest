@@ -75,12 +75,12 @@ class organizationManagement {
         }
     }
 
-    async updateVerifyLink(req) {
+    async updateVerifyCode(req) {
         let result
-        let link = utils.generateVerificationLink();
+        let link = utils.generateVerificationCode();
         link = link + '/' + req.userName;
         try {
-            result = await dao.update("verifications", { companyID: req.companyID }, { $set: { verificatonLink: link } })
+            result = await dao.update("verifications", { companyID: req.companyID }, { $set: { verificatonCode: link } })
         }
         catch (err) {
             result = { err: err }
@@ -89,8 +89,7 @@ class organizationManagement {
     /**************************************login*************************************** */
     //verification for login
     async signin(req) {
-        let log = await dao.find("organizations", { name: req.name })
-        console.log(log, req.name);
+        let log = await dao.find("organizations", { companyID: req.companyID })
         if (log.length == 1) {
             if (log[0].isDeleted === false) {
                 let result = await dao.find("auth-users", { email: log[0].email })
@@ -111,7 +110,7 @@ class organizationManagement {
     }
 
     async forgotPassword(req) {
-        let result = await dao.find("organizations", { name: req.name })
+        let result = await dao.find("organizations", { companyID: req.companyID })
         if (result[0].name == req.name) {
             //this.email=result[0].email;
             let link = utils.generateVerificationLink();
@@ -134,6 +133,15 @@ class organizationManagement {
         let log = await dao.delete("forget-password", { userName: req.userName })
         return ("update done");
     }
+
+    /*
+     //fetching verification data of user
+    async findVerificationData(userObj){
+        let userFind=await dao.find('verifications',{companyID: userObj.companyID})
+        console.log(userFind);
+        return userFind;
+    }
+    */
 
 
 }

@@ -46,12 +46,17 @@ const orgs = new OrganizationManagement()
 
 
 /*********************user signup***********************/
+
 app.get('/rest-api/users/get/', async (req, res) => {
     let result = await user.findAll();
     res.send(result)
 })
 app.use(parser.json());
+
 //method on clicking signUp 
+/*
+    name,  userName,  password,  email,  mobile,  dateOfBirth,  gender,
+ */
 app.post('/rest-api/users/signup', async (req, res) => {
     let authData = await user.authInsert(req.body);
     let result = await user.signupInsert(req.body);
@@ -59,13 +64,13 @@ app.post('/rest-api/users/signup', async (req, res) => {
     res.send(result);
 })
 
-//after activating the link
+//To activate the account
 app.delete('/rest-api/users/activate/:userName/:verificationCode', async (req, res) => {
     let result = await user.deleteVerifiedUser(req.params)
     res.send(result)
 })
 
-//updated link for verification
+//updated Code for verification
 app.patch('/rest-api/users/update/verificationCode', async (req, res) => {
     let result = await user.updateVerifyCode(req.body)
     res.send(result)
@@ -85,7 +90,7 @@ app.post('/rest-api/orgs/signup', async (req, res) => {
     res.send(verifyUser)
 })
 //after activating the link
-app.delete('/rest-api/orgs/activate/:companyId/:verificationCode', async (req, res) => {
+app.delete('/rest-api/orgs/activate/:companyID/:verificationCode', async (req, res) => {
     let result = await orgs.deleteVerifiedUser(req.params)
     res.send(result)
 })
@@ -96,11 +101,42 @@ app.patch('/rest-api/orgs/update/verificationCode', async (req, res) => {
     res.send(result)
 })
 
+/*
+//method on clicking signUp 
+app.post('/rest/api/users/add', async (req, res) => {
+    let authData = await user.authInsert(req.body);
+    let result = await user.signupInsert(req.body);  
+    let verifyUser = await user.verifyInsert(req.body);
+    let verficationData = await user.findVerificationData(req.body);
+    res.send(verficationData);
+})
+//unique username check
+app.post('/rest/api/users/uniqueUserName', async (req, res) => {
+    let isUnique = await user.uniqueUserName(req.body);
+    res.send(isUnique);
+})
 
+//unique email check
+app.post('/rest/api/users/uniqueEmail', async (req, res) => {
+    let isUnique = await user.uniqueEmail(req.body);
+    res.send(isUnique);
+})
+
+
+
+//method on clicking signUp 
+app.post('/rest/api/orgs/add', async (req, res) => {
+    let authData = await orgs.authInsert(req.body);
+    let result = await orgs.signupInsert(req.body);  
+    let verifyUser = await orgs.verifyInsert(req.body);
+    let verficationData = await user.findVerificationData(req.body);
+    res.send(verifyUser)
+})
+*/
 
 /*********************login***********************/
 /*********************users**********************/
-//method on clicking loginIn
+//method on clicking login
 app.post('/rest-api/users/login', async (req, res) => {
     let result = await user.signin(req.body);
     if (result == "Logged In")
@@ -108,7 +144,7 @@ app.post('/rest-api/users/login', async (req, res) => {
     res.send(result);
 })
 
-app.get('/rest-api/users/logout', async (req, res) => {
+app.post('/rest-api/users/logout', async (req, res) => {
     console.log(sessManager.getUserOrError401(req))
     sessManager.resetUser(req)
     res.send('Logged Out')
@@ -120,8 +156,8 @@ app.post('/rest-api/users/forget-password', async (req, res) => {
     res.send(result)
 })
 //method to update new Password
-app.post('/rest-api/users/change-password', async (req, res) => {
-    let result = await user.changePassword(req.body);
+app.post('/rest-api/users/change-password/:userName/:verificationCode', async (req, res) => {
+    let result = await user.changePassword(req.params.verificationCode);
     res.send(result)
 })
 /****************************org**************************/
@@ -129,11 +165,11 @@ app.post('/rest-api/users/change-password', async (req, res) => {
 app.post('/rest-api/orgs/login', async (req, res) => {
     let result = await orgs.signin(req.body);
     if (result == "Logged In")
-        sessManager.setUser(req, req.body.userName)
+        sessManager.setUser(req, req.body.companyID)
     res.send(result);
 })
 
-app.get('/rest-api/orgs/logout', async (req, res) => {
+app.post('/rest-api/orgs/logout', async (req, res) => {
     console.log(sessManager.getUserOrError401(req))
     sessManager.resetUser(req)
     res.send('Logged Out')
@@ -184,7 +220,7 @@ app.post('/rest-api/user/get-count/connections', async (req, res) => {
 
 /**
  * Sending Connect request
- * (sender - receiver)
+ * (receiver)
  */
 app.post('/rest-api/user/send-invitation', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
@@ -212,7 +248,9 @@ app.post('/rest-api/user/accept-invitation', async (req, res) => {
             res.end("Request Accepted");
         }
         catch (err) {
-            res.end("Error 404");
+            res.end({
+                err: err
+            });
         }
     }
 })
@@ -275,7 +313,7 @@ app.post('/rest-api/user/unblock', async (req, res) => {
 
 /**
  * Ignoring Invitation Received
- * (user-sender)
+ * (sender)
  */
 app.post('/rest-api/user/ignore-invitation', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
@@ -1046,6 +1084,7 @@ app.get("/rest-api/users/post/load", async (req, res) => {
 
 
 /**
+ * content
  * @description to insert post in database by a user
 */
 app.patch('/rest-api/users/createPosts', async (req, res) => {

@@ -187,18 +187,57 @@ class userManagement {
         }
     }
     //change password
-    async changePassword(req) {
-        let verified = await dao.find(this.FORGET, { verificationCode: req.verificationCode })
+    async changePassword(verificationCode) {
+        let verified = await dao.find(this.FORGET, { verificationCode: verificationCode })
         if (verified.length) {
             let emailObj = await dao.find(this.USERS, { userName: verified[0].userName })
             if (emailObj.length) {
                 let hashPassword = utils.encryptPassword(req.password)
                 let result = await dao.update(this.AUTH, { email: emailObj[0].email }, { $set: { password: hashPassword } });
-                let log = await dao.delete(this.FORGET, { verificationCode: req.verificationCode })
+                let log = await dao.delete(this.FORGET, { verificationCode: verificationCode })
                return (log);
             }
         }
 
     }
+
+    /*
+    //fetching verification data of user
+    async findVerificationData(userObj){
+        let userFind=await dao.find('verifications',{userName: userObj.userName})
+        console.log(userFind);
+        return userFind;
+    }
+
+    //unique user Name checking 
+   async uniqueUserName(userObj){
+       console.log(userObj.userName);
+        let userFind=await dao.find('users',{userName: userObj.userName})
+        console.log(userFind)
+        if(userFind.length==1)
+        {
+            return "notunique"
+        }
+        else
+        {
+            return "unique"
+        }
+   }
+
+      //unique user email checking 
+   async uniqueEmail(userObj){
+       console.log(userObj.email);
+        let emailFind=await dao.find('users',{email: userObj.email})
+        console.log(emailFind)
+        if(emailFind.length==1)
+        {
+            return "notunique"
+        }
+        else
+        {
+            return "unique"
+        }
+   }
+   */
 }
 module.exports = userManagement;

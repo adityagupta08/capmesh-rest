@@ -77,7 +77,6 @@ class Connections {
      * @returns {object} result
      */
     async acceptInvitation(collections, user, requester) {
-        console.log(queryData);
         let result = await dao.update(collections, { userName: user }, { $pull: { "connectionRequests.receive": requester } });
         let res = await dao.update(collections, { userName: user }, { $push: { "connections": requester } });
         res = await dao.update(collections, { userName: requester }, { $pull: { "connectionRequests.sent": user } });
