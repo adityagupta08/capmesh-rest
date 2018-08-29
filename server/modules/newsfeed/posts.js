@@ -22,7 +22,7 @@ class Posts {
         var filter = { "userName": userName };
         var content = { $push: { "posts": data } };
         var result = await dao.update(collections, filter, content)
-        return result
+        return data
     }
 
     /**

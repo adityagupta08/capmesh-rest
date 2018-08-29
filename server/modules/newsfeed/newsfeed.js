@@ -25,14 +25,22 @@ class NewsFeed {
 
         for (var i of result) {
             getPosts = await dao.aggregate(collections, [{ $match: { "userName": i } },
-            { $project: { "posts": 1, _id: 0 } }])
+            { $project: { "posts": 1, _id: 0,"userName":1,"name":1, "profile.image":1} }])
             getPosts.map(temp => {
+                let userName=temp.userName
+                let name=temp.name
+                let image = temp.profile.image
                 temp.posts.map(t => {
+                    t.userName=userName
+                    t.name=name
+                    t.image = image
                     postsArray.push(t);
+                    
                 })
                 return temp.posts;
             })
         }
+
         postsArray.sort((a, b) => {
             if (a.timestamp > b.timestamp) {
                 return -1;
