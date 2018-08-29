@@ -488,15 +488,15 @@ app.post('/rest-api/orgs/removeJob/', async (req, res) => {
 app.post('/rest-api/orgs/add-post/', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
-    let result;
-    try {
-        result = await company.addPost(orgCollection, companyId, req.body);
+        let result;
+        try {
+            result = await company.addPost(orgCollection, companyId, req.body);
+        }
+        catch (err) {
+            result = { "err": err };
+        }
+        res.send(result);
     }
-    catch (err) {
-        result = { "err": err };
-    }
-    res.send(result);
-}
 })
 
 /**
@@ -507,15 +507,15 @@ app.post('/rest-api/orgs/add-post/', async (req, res) => {
 app.post('/rest-api/user/orgs/like-post/', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
-    let result;
-    try {
-        result = await company.likePost(orgCollection, req.body, user);
+        let result;
+        try {
+            result = await company.likePost(orgCollection, req.body, user);
+        }
+        catch (err) {
+            result = { "err": err };
+        }
+        res.send(result);
     }
-    catch (err) {
-        result = { "err": err };
-    }
-    res.send(result);
-}
 })
 
 /**
@@ -525,8 +525,8 @@ app.post('/rest-api/user/orgs/like-post/', async (req, res) => {
 app.post('/rest-api/orgs/applicant-list/', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
-    let result = await company.applicantList(orgCollection,user, req.body);
-    res.send(result);
+        let result = await company.applicantList(orgCollection, user, req.body);
+        res.send(result);
     }
 })
 
@@ -538,15 +538,15 @@ app.post('/rest-api/orgs/applicant-list/', async (req, res) => {
 app.post('/rest-api/orgs/applicant-count/', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
-    let result;
-    try {
-        result = await company.getApplicantCount(orgCollection,user, req.body)
+        let result;
+        try {
+            result = await company.getApplicantCount(orgCollection, user, req.body)
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result);
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result);
-}
 });
 
 
@@ -557,15 +557,15 @@ app.post('/rest-api/orgs/applicant-count/', async (req, res) => {
 app.post('rest-api/user/orgs/add-applicant/', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
-    let result;
-    try {
-        result = await company.addApplicantToList(orgCollection, req.body, user)
+        let result;
+        try {
+            result = await company.addApplicantToList(orgCollection, req.body, user)
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result);
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result);
-}
 });
 
 //_---------------------------------------------------------//
@@ -582,59 +582,71 @@ const chats = new Chats();
 
 /*The format of req body for addChatsBetweenUsers
 {
-"user1":103,
-  "user2":102,
-  "sender":103,
+  "receiver":102,
   "content":"Hello"
 }*/
 
 app.post('/rest-api/chats/addChatsBetweenUsers', async (req, res) => {
-    let previousConversationStatus = await chats.conversationExist(req.body);
-    if (previousConversationStatus) {
-        var result = await chats.addMessageInConversation(req.body);
-        res.send(result);
-    }
-    else {
-        let result = await chats.newConversation(req.body);
-        res.send(result);
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let previousConversationStatus = await chats.conversationExist(user, req.body.receiver);
+        console.log(previousConversationStatus)
+        if (previousConversationStatus) {
+            let result = {
+                "val": await chats.addMessageInConversation(user, req.body.receiver, req.body.content)
+            }
+
+            res.send(result);
+        }
+        else {
+            let result = {
+                "val": await chats.newConversation(user, req.body.receiver, req.body.content)
+            }
+            res.send(result);
+        }
     }
 })
 //get chats between two user1 and user2
 
 /*The format of req body for addChatsBetweenUsers
 {
-"user1":103,
   "user2":102
 }*/
 
 app.post('/rest-api/chats/getchatsBetweenUsers', async (req, res) => {
-    let result = await chats.getChatsBetweenUsers(req.body)
-    res.send(result)
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = {}
+        result.val = await chats.getChatsBetweenUsers(user, req.body.user2)
+        res.send(result)
+    }
 })
 
 //deletes a single message of given timestamp between user1 and user2
 /*The format of req body for deleteSingleMessage
 {
-"user1":103,
   "user2":102,
   "timestamp":
 }*/
 app.delete('/rest-api/chats/deleteSingleMessage', async (req, res) => {
-    var result = await chats.deleteSingleMessage(req.body);
-    console.log(result)
-    res.send(result)
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        var result = await chats.deleteSingleMessage(user, req.body.user2, req.body.timestamp);
+        console.log(result)
+        res.send(result)
+    }
 })
 
 //gets the users and the last message the given user has conversed with
-/*The format of req body for hasConversationsWith
-{
-"user":103
-}*/
+/*The format of req body for hasConversationsWith */
 
 app.post('/rest-api/chats/hasConversationsWith', async (req, res) => {
-    let result = await chats.hasConversationsWith(req.body)
-    console.log(result)
-    res.send(result)
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
+        let result = {}
+        result.val = await chats.hasConversationsWith(user)
+        res.send(result)
+    }
 })
 
 
@@ -649,7 +661,7 @@ var control = new Controller();
     @author :  Shrishti 
 */
 app.get('/rest-api/users/get/:un', async (req, res) => {
-    let result = await control.getUserByUserName(user);
+    let result = await control.getUserByUserName(req.params.un);
     res.send(result);
 });
 
@@ -1020,11 +1032,12 @@ const comments = new Comment();
 
 //fetching the updated posts of a particular person who has logged in based on username
 app.get("/rest-api/users/post/load", async (req, res) => {
-    console.log('Load Invoked');
-    user = sessManager.getUserOrError401(req, res)
-    let result = await newsFeed.getNewsFeed(newsFeedCollection, user);//take username from session
-    res.send(result)
-
+    //console.log('Load Invoked');
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        let result = await newsFeed.getNewsFeed(newsFeedCollection, user);//take username from session
+        res.send(result)
+    }
 })
 
 
@@ -1037,116 +1050,135 @@ app.get("/rest-api/users/post/load", async (req, res) => {
 */
 app.patch('/rest-api/users/createPosts', async (req, res) => {
     let result;
-    let user = sessManager.getUserOrError401(req, res)
-    let userName = req.params.userName;
-    try {
-        result = await post.createPosts(newsFeedCollection, req.body, user);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            result = await post.createPosts(newsFeedCollection, req.body, user);
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 });
 
 /**
  * @description to edit post inserted in the database by the user
  */
-app.patch('/rest-api/users/editPosts/update/:userName/:postId', async (req, res) => {
+app.patch('/rest-api/users/editPosts/update/:postId', async (req, res) => {
     let result;
-    let userName = req.params.userName;
     let postId = req.params.postId;
-    try {
-        result = await post.editPosts(newsFeedCollection, req.body, userName, postId);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            result = await post.editPosts(newsFeedCollection, req.body, user, postId);
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 })
 
 /**
  * @description to delete post inserted in the database by the user
  */
-app.patch('/rest-api/users/deletePosts/update/:userName/:postId', async (req, res) => {
+app.patch('/rest-api/users/deletePosts/update/:postId', async (req, res) => {
     let result
-    let userName = req.params.userName;
     let postId = req.params.postId;
-    try {
-        result = await post.deletePosts(newsFeedCollection, userName, postId);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            result = await post.deletePosts(newsFeedCollection, user, postId);
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 })
 
 /**
  * @description to search people in the database by the user
  */
-app.patch('/rest-api/users/searchPeople/', async (req, res) => {
+app.patch('/rest-api/users/searchPeople', async (req, res) => {
     let result;
-    try {
-        result = await search.searchPeople(newsFeedCollection, req.body.query);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            result = await search.searchPeople(newsFeedCollection, req.body.query);
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 })
 
 /**
  * @description to search companies in the database by the user
  */
-app.patch('/rest-api/users/searchCompanies/', async (req, res) => {
+app.patch('/rest-api/users/searchCompanies', async (req, res) => {
     let result;
-    try {
-        result = await search.searchCompanies(newsFeedCollection, req.body.query);
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            result = await search.searchCompanies(newsFeedCollection, req.body.query);
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 })
 
 
 //Likes and dislikes
-app.post('/getLike', async (req, res) => {
+app.post('/rest-api/users/post/getLike', async (req, res) => {
     let result
-    try {
-        var store = req.body;
-        result = await likes.getLike(connCollection, store.userName, store.postId, store.likedByName)
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            var store = req.body;
+            result = await likes.getLike(connCollection, store.userName, store.postId, user)
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 })
 
-app.post('/removeLike', async (req, res) => {
+app.post('/rest-api/users/post/removeLike', async (req, res) => {
     let result
-    try {
-        var store = req.body;
-        result = await likes.removeLike(connCollection, store.userName, store.postId, store.likedByName)
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            var store = req.body;
+            result = await likes.removeLike(connCollection, store.userName, store.postId, user)
+        }
+        catch (err) {
+            result = { err: err }
+        }
+        res.send(result)
     }
-    catch (err) {
-        result = { err: err }
-    }
-    res.send(result)
 })
 
-app.get('/getLikesdetails/:postId', async (req, res) => {
-    var id = req.params.postId
-
-    let result = await likes.getLikesDetails(connCollection, id)
-    res.send(result)
-})
+// app.get('/rest-api/users/post/getLikesdetails/:postId', async (req, res) => {
+//     var id = req.params.postId
+//     let user = sessManager.getUserOrError401(req, res);
+//     if (user) {
+//         let result = await likes.getLikesDetails(connCollection, id)
+//         res.send(result)
+//     }
+// })
 
 
 /***
  * @Description calling getComments() method of Comments class in comments.js file 
  */
-app.get('/getComments/:id', async (req, res) => {
-    let pId = req.params.id;
+app.get('/rest-api/users/post/getComments/:postId', async (req, res) => {
+    let pId = req.params.postId;
     let result = await comments.getComments(newsFeedCollection, pId);
     res.send(result);
 })
@@ -1159,21 +1191,21 @@ app.get('/getComments/:id', async (req, res) => {
  */
 app.use(parser.json());
 
-app.put('/updateComments/:userName/:postId', async (req, res) => {
+app.put('/rest-api/users/post/updateComments/:uName/:postId', async (req, res) => {
     let result
-    let userName = req.params['userName']
+    let uName = req.params.uName
     let postId = req.params['postId']
+    let user = sessManager.getUserOrError401(req, res);
+    if (user) {
+        try {
+            let result = await comments.postComments(newsFeedCollection, uName, postId, req.body, user)
 
-    try {
-        let result = await comments.postComments(newsFeedCollection, userName, postId, req.body)
-
-        res.send(result)
+            res.send(result)
+        }
+        catch (err) {
+            result = { err: err }
+        }
     }
-    catch (err) {
-        result = { err: err }
-    }
-
-
 })
 
 

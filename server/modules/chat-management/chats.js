@@ -11,9 +11,7 @@ class Chats {
      * @param {Object} requestBody contains user 1 and user 2 details
      * @returns {Object} returns the array of messages exchanged between the users 
      */
-    async getChatsBetweenUsers(requestBody) {
-        let user1 = (requestBody).user1;
-        let user2 = (requestBody).user2;
+    async getChatsBetweenUsers(user1, user2) {
         let result
         try {
             result = await dao.aggregate(collection, [{ $match: { participants: { $all: [user1, user2] } } }, { $project: { _id: 0, messages: 1 } }])
@@ -32,9 +30,8 @@ class Chats {
      * @param {Object} requestBody contains user 1 and user 2 details
      * @returns {Object} returns true if conversation between two users exist and false if doesn't 
      */
-    async conversationExist(requestBody) {
-        let user1 = (requestBody).user1;
-        let user2 = (requestBody).user2;
+    async conversationExist( user1, user2) {
+        
         let result = await dao.find(collection, { participants: { $all: [user1, user2] } });
         if (result.length === 0) {
             return false;
@@ -52,12 +49,8 @@ class Chats {
      * @param {Object} requestBody contains user 1, user 2, sender and content of the message 
      * @returns {Object} returns the result of query executed
      */
-    async newConversation(requestBody) {
-        let user1 = (requestBody).user1;
-        let user2 = (requestBody).user2;
-        let sender = (requestBody).sender;
-        let content = (requestBody).content;
-        let query = { "participants": [user1, user2], "messages": [{ "sender": sender, "content": content, timestamp: new Date() }] }
+    async newConversation(sender, receiver, content) {
+        let query = { "participants": [sender, receiver], "messages": [{ "sender": sender, "content": content, timestamp: new Date() }] }
         let result
         try {
             result = await dao.insert(collection, query); 
@@ -76,14 +69,10 @@ class Chats {
      * @param {Object} requestBody contains user 1, user 2, sender and content of the message 
      * @returns {Object} returns the result of query executed
      */
-    async addMessageInConversation(requestBody) {
-        let user1 = (requestBody).user1;
-        let user2 = (requestBody).user2;
-        let sender = (requestBody).sender;
-        let content = (requestBody).content;
+    async addMessageInConversation(sender, receiver, content) {
         let result
         try {
-            result = await dao.update(collection, { participants: { $all: [user1, user2] } }, { $push: { "messages": { "sender": sender, "content": content, "timestamp": new Date() } } });
+            result = await dao.update(collection, { participants: { $all: [sender, receiver] } }, { $push: { "messages": { "sender": sender, "content": content, "timestamp": new Date() } } });
         }
         catch (err) {
             result = { error: "err" }
@@ -98,10 +87,7 @@ class Chats {
      * @param {Object} requestBody contains user 1, user 2 and timestamp of message 
      * @returns {Object} returns the result of query executed
      */
-    async deleteSingleMessage(requestBody) {
-        let user1 = (requestBody).user1;
-        let user2 = (requestBody).user2;
-        let timestamp = (requestBody).timestamp;
+    async deleteSingleMessage(user1, user2, timestamp) {
         let result
         try {
             result = await dao.update(collection, { participants: { $all: [user1, user2] } }, { $pull: { "messages": { "timestamp": new Date(timestamp) } } })
@@ -118,8 +104,7 @@ class Chats {
      * @param {Object} requestBody contains user  
      * @returns {Object} returns the list of users with their last message who have conversation with give user
      */
-    async hasConversationsWith(requestBody) {
-        var user = requestBody.user;
+    async hasConversationsWith(user) {
         let result
         try {
             result = await dao.aggregate(collection, [{ $match: { participants: user } }, { $project: { participants: 1, messages: 1, _id: 0 } }]);
@@ -128,8 +113,7 @@ class Chats {
                 var msg
                 var x = t.participants
                 var l = t.messages.length
-                // console.log(x);
-                // console
+                
                 x = x.filter(val => {
                     if (val != user) {
                         if (l != 0) {
@@ -146,9 +130,6 @@ class Chats {
                 return temp;
             })
             console.log(result);
-            result = result.filter(t => {
-                if (t.participant > 0) { return t }
-            })
         }
         catch (err) {
             result = { error: err }

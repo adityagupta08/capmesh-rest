@@ -35,16 +35,16 @@ class Comments {
  * @Description adds particular comments of the post based on postId and userId
  * @author Dnyanda Deshpande, A Haritha, Aditya Gupta, Pawan Parihar
  * @params {database collection} collections
- * @params {integer} u
- * @params {integer} p
- * @params {Object} req
+ * @params {integer} uId: id of the person who has posted..
+ * @params {integer} pId: post Id
+ * @params {Object} req {content:""}
+ * @params {String} user: person who is logged in and wants to comment..
  * @params {object} result adds data in comments array based on postId and userId
  */
 
-    async postComments(collections, uId, pId, requestBody) {
+    async postComments(collections, uId, pId, requestBody, user) {
         let query = { $and: [{ "userName": uId }, { "posts.postId": pId }] };
-        
-        let newquery = { $push: { "posts.$.comments": { "commentedBy": requestBody.userName,"content": requestBody.content, "timestamp": new Date() } } }
+        let newquery = { $push: { "posts.$.comments": { "commentedBy": user,"content": requestBody.content, "timestamp": new Date() } } }
         let result = await dao.update(collections, query, newquery);
         return (result)
     }

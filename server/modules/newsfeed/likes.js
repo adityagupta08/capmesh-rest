@@ -46,14 +46,14 @@ class likes {
         return (result);
     }
 
-    async getLikesDetails(collections,id) {
-        let query = [{ $project: { "posts.postId": 1 ,"posts.likes": 1 } },{$unwind:"$posts"},{ $match: { "posts.postId":id} }]
+    /*async getLikesDetails(collections,id) {
+        let query = [{ $project: { "posts.postId": 1 ,"posts.likes": 1 } },{$unwind:"$posts"},{ $match:  [{ "posts.postId":id},{ "userName": userName }] }]
         let result=await dao.aggregate(collections,query);
         let count=result[0].posts.likes.length;
         result.push({"count":count})
         //console.log(result[1].count)
         return (result);
-    }
+    }*/
 }
 
 module.exports = likes
