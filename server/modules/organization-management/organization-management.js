@@ -116,7 +116,7 @@ class organizationManagement {
 
     async forgotPassword(req) {
         let result = await dao.find(this.ORG, { companyID: req.companyID })
-        if(result.length) {
+        if (result.length) {
             if (result[0].companyID == req.companyID) {
                 //this.email=result[0].email;
                 let link = utils.generateVerificationCode();
@@ -142,32 +142,45 @@ class organizationManagement {
             if (emailObj.length) {
                 let result = await this.updatePasswordUtil(emailObj[0].email, password)
                 let log = await dao.delete(this.FORGET, { verificationCode: verificationCode })
-               return (log);
+                return (log);
             }
         }
     }
 
     async updatePassword(userName, password) {
-        let user = await dao.find(this.ORG, {companyID:userName})
-        if(user.length) {
+        let user = await dao.find(this.ORG, { companyID: userName })
+        if (user.length) {
             let result = await this.updatePasswordUtil(user[0].email, password)
             return result
         }
     }
     async updatePasswordUtil(email, password) {
         let hashPassword = utils.encryptPassword(password)
-        let result = await dao.update(this.AUTH, { email: email}, {$set: { password: hashPassword}})
+        let result = await dao.update(this.AUTH, { email: email }, { $set: { password: hashPassword } })
         return result
     }
 
-    /*
+    async uniqueUserName(companyID) {
+        let user = await dao.find(this.ORG, { companyID: companyID })
+        if (user.length)
+            return false
+        return true
+    }
+
+    //unique user email checking 
+    async uniqueEmail(email) {
+        let user = await dao.find(this.ORG, { email: email })
+        if (user.length)
+            return false
+        return true
+    }
+    
      //fetching verification data of user
     async findVerificationData(userObj){
-        let userFind=await dao.find('verifications',{companyID: userObj.companyID})
-        console.log(userFind);
+        let userFind=await dao.find(this.VERIFY,{companyID: userObj.companyID})
         return userFind;
     }
-    */
+    
 
 
 }

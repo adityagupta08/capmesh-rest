@@ -210,44 +210,30 @@ class userManagement {
         return result
     }
 
-    /*
+    
     //fetching verification data of user
     async findVerificationData(userObj){
-        let userFind=await dao.find('verifications',{userName: userObj.userName})
+        let userFind=await dao.find(this.VERIFY,{userName: userObj.userName})
         console.log(userFind);
         return userFind;
     }
 
-    //unique user Name checking 
-   async uniqueUserName(userObj){
-       console.log(userObj.userName);
-        let userFind=await dao.find('users',{userName: userObj.userName})
-        console.log(userFind)
-        if(userFind.length==1)
-        {
-            return "notunique"
-        }
-        else
-        {
-            return "unique"
-        }
+   
+   async uniqueUserName(userName){
+        let user = await dao.find(this.USERS, {userName: userName})
+        if(user.length)
+            return false
+        return true
    }
 
       //unique user email checking 
-   async uniqueEmail(userObj){
-       console.log(userObj.email);
-        let emailFind=await dao.find('users',{email: userObj.email})
-        console.log(emailFind)
-        if(emailFind.length==1)
-        {
-            return "notunique"
-        }
-        else
-        {
-            return "unique"
-        }
+   async uniqueEmail(email){
+        let user=await dao.find(this.USERS,{email: email})
+        if(user.length)
+            return false
+        return true
    }
-   */
+   
 
 }
 module.exports = userManagement;

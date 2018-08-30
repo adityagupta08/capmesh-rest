@@ -64,7 +64,8 @@ app.post('/rest-api/users/signup', async (req, res) => {
     let authData = await users.authInsert(req.body);
     let result = await users.signupInsert(req.body);
     let verifyUser = await users.verifyInsert(req.body);
-    res.send(result);
+    let verficationData = await users.findVerificationData(req.body);
+    res.send(verficationData);
 })
 
 /**
@@ -99,7 +100,9 @@ app.post('/rest-api/orgs/signup', async (req, res) => {
     let authData = await orgs.authInsert(req.body);
     let result = await orgs.signupInsert(req.body);
     let verifyUser = await orgs.verifyInsert(req.body);
-    res.send(verifyUser)
+    let verficationData = await orgs.findVerificationData(req.body);
+    res.send(verificationData)
+   
 })
 //after activating the link
 /**
@@ -125,30 +128,47 @@ app.post('/rest/api/users/add', async (req, res) => {
     let authData = await users.authInsert(req.body);
     let result = await users.signupInsert(req.body);  
     let verifyUser = await users.verifyInsert(req.body);
-    let verficationData = await users.findVerificationData(req.body);
-    res.send(verficationData);
+    
 })
-//unique username check
+*/
+
+/**
+ * @required @tested
+ */
 app.post('/rest/api/users/uniqueUserName', async (req, res) => {
-    let isUnique = await users.uniqueUserName(req.body);
-    res.send(isUnique);
+    let isUniqueUser = await users.uniqueUserName(req.body.userName);
+    //let isUniqueOrg = await orgs.uniqueUserName(req.body.userName)
+    res.send(isUniqueUser);
 })
 
+/**
+ * @required @tested
+ */
+app.post('/rest/api/orgs/uniqueUserName', async (req, res) => {
+    //let isUniqueUser = await users.uniqueUserName(req.body.companyID);
+    let isUniqueOrg = await orgs.uniqueUserName(req.body.companyID)
+    res.send((isUniqueOrg));
+})
+
+/**
+ * @required @tested
+ */
 //unique email check
-app.post('/rest/api/users/uniqueEmail', async (req, res) => {
-    let isUnique = await users.uniqueEmail(req.body);
-    res.send(isUnique);
+app.post('/rest/api/users-orgs/uniqueEmail', async (req, res) => {
+    let isUniqueUser = await users.uniqueEmail(req.body.email);
+    let isUniqueOrg = await orgs.uniqueEmail(req.body.email)
+    res.send((isUniqueUser && isUniqueOrg));
 })
 
 
 
+/*
 //method on clicking signUp 
 app.post('/rest/api/orgs/add', async (req, res) => {
     let authData = await orgs.authInsert(req.body);
     let result = await orgs.signupInsert(req.body);  
     let verifyUser = await orgs.verifyInsert(req.body);
-    let verficationData = await users.findVerificationData(req.body);
-    res.send(verifyUser)
+    
 })
 */
 
@@ -189,8 +209,8 @@ app.post('/rest-api/user/forget-password', async (req, res) => {
  * @required @tested
  */
 app.patch('/rest-api/user/change-password/:userName/:verificationCode', async (req, res) => {
-    let result = await users.changePassword(req.params.userName,req.params.verificationCode,
-                                            req.body.password);
+    let result = await users.changePassword(req.params.userName, req.params.verificationCode,
+        req.body.password);
     res.send(result)
 })
 
@@ -199,8 +219,8 @@ app.patch('/rest-api/user/change-password/:userName/:verificationCode', async (r
  * @required @tested
  */
 app.patch('/rest-api/user/update-password', async (req, res) => {
-    let user = sessManager.getUserOrError401(req, res) 
-    if(user) {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
         let result = await users.updatePassword(user, req.body.password)
         res.send(result)
     }
@@ -240,8 +260,8 @@ app.post('/rest-api/orgs/forget-password', async (req, res) => {
  * @required @tested
  */
 app.patch('/rest-api/orgs/change-password/:companyID/:verificationCode', async (req, res) => {
-    let result = await orgs.changePassword(req.params.companyID,req.params.verificationCode,
-                                                req.body.password);
+    let result = await orgs.changePassword(req.params.companyID, req.params.verificationCode,
+        req.body.password);
     res.send(result)
 })
 
@@ -251,8 +271,8 @@ app.patch('/rest-api/orgs/change-password/:companyID/:verificationCode', async (
  * @required @tested
  */
 app.patch('/rest-api/orgs/update-password', async (req, res) => {
-    let user = sessManager.getUserOrError401(req, res) 
-    if(user) {
+    let user = sessManager.getUserOrError401(req, res)
+    if (user) {
         let result = await orgs.updatePassword(user, req.body.password)
         res.send(result)
     }
@@ -527,7 +547,7 @@ app.post('/rest-api/user/follow-company', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         try {
-            let result = await connection.followCompany(connCollection, orgCollection, user, req.body.companyId);
+            let result = await connection.followCompany(connCollection, orgCollection, user, req.body.companyID);
             res.end(JSON.stringify(result));
         }
         catch (err) {
@@ -543,7 +563,7 @@ app.post('/rest-api/user/follow-company', async (req, res) => {
  * (companyId)
  * CO
  */
-app.post('/rest-api/user/orgs/get/', async (req, res) => {
+app.post('/rest-api/user/orgs/get', async (req, res) => {
     let result = await company.getData(orgCollection, req.body);
     res.send(result);
 })
@@ -552,7 +572,7 @@ app.post('/rest-api/user/orgs/get/', async (req, res) => {
  * (companyId)
  * CO
  */
-app.post('/rest-api/user/orgs/getJobList/', async (req, res) => {
+app.post('/rest-api/user/orgs/getJobList', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result = await company.jobList(orgCollection, req.body);
@@ -566,7 +586,7 @@ app.post('/rest-api/user/orgs/getJobList/', async (req, res) => {
  * CO
  */
 
-app.post('/rest-api/user/orgs/getJob/', async (req, res) => {
+app.post('/rest-api/user/orgs/getJob', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result = await company.getJobDetails(orgCollection, req.body);
@@ -579,7 +599,10 @@ app.post('/rest-api/user/orgs/getJob/', async (req, res) => {
  * (companyId, jobId, jobPosition, postDate, lastDate, applicants*)
  * CO
  */
-app.post('/rest-api/orgs/postJob/', async (req, res) => {
+/**
+ * @required @tested
+ */
+app.post('/rest-api/orgs/postJob', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result;
@@ -597,7 +620,10 @@ app.post('/rest-api/orgs/postJob/', async (req, res) => {
  * (companyId, jobId)
  * CO
  */
-app.post('/rest-api/orgs/removeJob/', async (req, res) => {
+/**
+ * @required @tested
+ */
+app.delete('/rest-api/orgs/removeJob', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result;
@@ -616,12 +642,15 @@ app.post('/rest-api/orgs/removeJob/', async (req, res) => {
  * (companyId, postId, content)
  * CO
  */
-app.post('/rest-api/orgs/add-post/', async (req, res) => {
+/**
+ * @required @tested
+ */
+app.post('/rest-api/orgs/add-post', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result;
         try {
-            result = await company.addPost(orgCollection, companyId, req.body);
+            result = await company.addPost(orgCollection, user, req.body);
         }
         catch (err) {
             result = { "err": err };
@@ -635,7 +664,10 @@ app.post('/rest-api/orgs/add-post/', async (req, res) => {
  * (companyId, postId, user)
  * CO
  */
-app.post('/rest-api/user/orgs/like-post/', async (req, res) => {
+/**
+     * @required @tested
+     */
+app.post('/rest-api/user/orgs/like-post', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result;
@@ -653,7 +685,7 @@ app.post('/rest-api/user/orgs/like-post/', async (req, res) => {
  * List of applicants
  *  (companyId, jobId)
  */
-app.post('/rest-api/orgs/applicant-list/', async (req, res) => {
+app.post('/rest-api/orgs/applicant-list', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result = await company.applicantList(orgCollection, user, req.body);
@@ -666,7 +698,7 @@ app.post('/rest-api/orgs/applicant-list/', async (req, res) => {
  * Getting applicant count
  *  (companyId, jobId)
  */
-app.post('/rest-api/orgs/applicant-count/', async (req, res) => {
+app.post('/rest-api/orgs/applicant-count', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result;
@@ -685,12 +717,16 @@ app.post('/rest-api/orgs/applicant-count/', async (req, res) => {
 *@description Add applicant to the applicant list
 * (companyId, jobId, applicant)
 */
-app.post('rest-api/user/orgs/add-applicant/', async (req, res) => {
+/**
+ * @required @tested
+ */
+app.post('/rest-api/user/orgs/add-applicant', async (req, res) => {
     let user = sessManager.getUserOrError401(req, res)
     if (user) {
         let result;
         try {
             result = await company.addApplicantToList(orgCollection, req.body, user)
+            console.log(result)
         }
         catch (err) {
             result = { err: err }

@@ -1,7 +1,7 @@
-const express = require('express');
 const Dao = require('../data-access/data-access');
-const app = express();
 const dao = new Dao();
+
+const crypto = require("crypto");
 
 class Company {
     /**
@@ -39,7 +39,10 @@ class Company {
      * @returns {object} result
      */
     async addJobPost(collection,companyId, queryData) {
-        let result = await dao.update(collection, { "companyID": companyId }, { $push: { "profile.jobs": { "jobId": queryData.jobId, "position": queryData.jobPosition, "timestamp": queryData.postDate, "lastDate": queryData.lastDate, "applicants": [] } } });
+        let date = new Date()
+        let lastDate = new Date(queryData.lastDate)
+        let id = crypto.randomBytes(16).toString("hex");
+        let result = await dao.update(collection, { "companyID": companyId }, { $push: { "profile.jobs": { "jobId": id, "position": queryData.jobPosition, "timestamp": date, "lastDate": lastDate, "applicants": [] } } });
         return (result);
     }
 
@@ -52,8 +55,9 @@ class Company {
      * @returns {object} result
      */
     async getJobDetails(collection, queryData) {
-        let result = await dao.aggregate(collection, [{ $match: { 'companyID': queryData.companyId } }, { $project: { post: { $filter: { input: '$profile.jobs', as: 'job', cond: { $eq: ['$$job.jobId', queryData.jobId] } } }, _id: 0 } }]);
-        return (result[0].post[0]);
+        let result = await dao.aggregate(collection, [{ $match: { 'companyID': queryData.companyID } }, { $project: { post: { $filter: { input: '$profile.jobs', as: 'job', cond: { $eq: ['$$job.jobId', queryData.jobId] } } }, _id: 0 } }]);
+        console.log(result)
+        return 'abc'//(result[0].post[0]);
     }
 
 
@@ -66,7 +70,10 @@ class Company {
      * @returns {object} result
      */
     async addPost(collection, companyId, queryData) {
-        let result = await dao.update(collection, { "companyID": companyId }, { $push: { "profile.post": { "postId": queryData.postId, "content": queryData.content, "timestamp": queryData.postDate, likes: [], comments: [] } } });
+        let id = crypto.randomBytes(16).toString("hex")
+        let postDate = new Date()
+        let result = await dao.update(collection, { "companyID": companyId }, { $push: { "profile.post": { "postId": id, "content": queryData.content, "timestamp": postDate, likes: [], comments: [] } } });
+        console.log(result)
         return (result);
     }
 
@@ -128,8 +135,9 @@ class Company {
      * @param {object} queryData input data object
      * @returns {object} result
      */
+    
     async likePost(collection, queryData, user) {
-        let result = await dao.update(collection, { "companyID": queryData.companyId, 'profile.post.postId': queryData.postId }, { $push: { "profile.post.$.likes": { "likedBy": user, "timestamp": new Date() } } });
+        let result = await dao.update(collection, { "companyID": queryData.companyID, 'profile.post.postId': queryData.postId }, { $push: { "profile.post.$.likes": { "likedBy": user, "timestamp": new Date() } } });
         return (result);
     }
 
@@ -142,8 +150,11 @@ class Company {
     * @param {object} queryData having query
     * @returns {object} result
     */
+   /**
+    * @required
+    */
     async addApplicantToList(collection, queryData, applicant) {
-        let result = await dao.update(collection, { "companyID": queryData.companyId, 'profile.jobs.jobId': queryData.jobId }, { $push: { "profile.jobs.$.applicants": applicant } });
+        let result = await dao.update(collection, { "companyID": queryData.companyID, 'profile.jobs.jobId': queryData.jobId }, { $push: { "profile.jobs.$.applicants": applicant } });
         return result;
     }
 }
