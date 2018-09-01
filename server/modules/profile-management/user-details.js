@@ -23,7 +23,7 @@ class Controller {
 
     /*
         @desc : "This function will add the award passed as obj to the user's profile.. When we click on add award(+) then, the entered details will be fetched and passed as obj"
-        @author : Soumyodipta Majumdar
+        @author : Supriya Patil
         @param : {string} user name, {object} award object
         @return : db update response
     */
@@ -37,7 +37,7 @@ class Controller {
 
     /*
         @desc : "This function will update the award(according to user requirement) passed as obj to the user's profile... When we click on update award() then, the entered details will be fetched and passed as obj"
-        @author :  Soumyodipta Majumdar
+        @author :  Supriya Patil
         @param : {string} username, {string} award id, {object} award object
         @return : db update response
     */
@@ -57,7 +57,7 @@ class Controller {
 
     /*
        @desc : "This function will remove the award passed as obj to the user's profile.. When we click on delete award(-) then, the entered details will be removed from the database"
-       @author : Soumyodipta Majumdar
+       @author : Supriya Patil
        @param : {string} username, {string} award id
        @return : db update response
    */
@@ -72,7 +72,7 @@ class Controller {
 
     /*
         @desc : "This function will add certificates passed as obj to the user's profile.. When we click on add certificates(+) then, the entered details will be fetched and passed as obj"
-        @author : Parag Badala
+        @author : Soumyodipta Majumdar
         @param : {string} user name, {object} certifiactions object
         @return : db update resonse
     */
@@ -86,7 +86,7 @@ class Controller {
 
     /*
         @desc "This function will update the certificates(according to user requirement) passed as obj to the user's profile.. When we click on update certificate() then, the entered details will be fetched and passed as obj"
-        @author : Parag Badala
+        @author : Soumyodipta Majumdar
         @param : {string} user name, {string} certifications id, {object} certifications object
         @return : db update response
     */
@@ -106,7 +106,7 @@ class Controller {
 
     /*
         @desc "This function will remove the certificates passed as obj to the user's profile.. When we click on delete certificate(-) then, the entered details will be removed from the database"
-        @author : Parag Badala
+        @author : Soumyodipta Majumdar
         @param : {string} user name, {string} certifiaction id
         @return : db update response
     */
@@ -211,7 +211,7 @@ class Controller {
 
     /*
         @desc "This function will delete skills(according to user requirement) passed to the user's profile.. When we click on remove skill() then, the entered details will be removed from the user's profile"
-        @author : Veshnavee Gupta, Somya Burman
+        @author : Veshnavee Gupta
         @param : {string} user name, {string} skill value
         @return : db update response
     */
@@ -367,7 +367,7 @@ class Controller {
 
     /*
         @desc "This function will update Name(according to user) passed to the user's profile.. When we click on updateName() then, the entered detail will be updated to the user's profile"
-        @author : Somya Burman
+        @author : Shrishti
         @param : {string} user name, {obj} name
         @return : db update response
     */
@@ -386,7 +386,7 @@ class Controller {
 
     /*
         @desc "This function will update DOB(according to user) passed to the user's profile.. When we click on updateDOB() then, the entered detail will be updated to the user's profile"
-        @author : Somya Burman
+        @author : Shrishti
         @param : {string} user name, {obj} dateOfBith
         @return : db update response
     */
@@ -405,7 +405,7 @@ class Controller {
 
     /*
         @desc "This function will update Email(according to user) passed to the user's profile.. When we click on updateEmail() then, the entered detail will be updated to the user's profile"
-        @author : Somya Burman
+        @author : Anubha Joshi
         @param : {string} user name, {obj} email
         @return : db update response
     */
@@ -424,7 +424,7 @@ class Controller {
 
     /*
         @desc "This function will update Mobile(according to user) passed to the user's profile.. When we click on updateMobile() then, the entered detail will be updated to the user's profile"
-        @author : Somya Burman
+        @author : Anubha Joshi
         @param : {string} user name, {obj} mobile
         @return : db update response
     */
