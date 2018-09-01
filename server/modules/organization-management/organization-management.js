@@ -81,6 +81,12 @@ class organizationManagement {
         }
     }
 
+    async findVerificationData(userObj) {
+        let userFind = await dao.find(this.VERIFY, { companyID: userObj.companyID })
+        console.log(userFind);
+        return userFind;
+    }
+
     async updateVerifyCode(companyID) {
         let result
         let link = utils.generateVerificationCode();
@@ -101,16 +107,24 @@ class organizationManagement {
                 if (result) {
                     let hashPassword = utils.encryptPassword(req.password)
                     if (result[0].password == hashPassword) {
-                        return "Logged In"
+                        return "logged In";
                     }
+                    else {
+                        return "not verified";
+                    }
+
+                }
+                else {
+                    return "Incorrect Password";
                 }
             }
             else {
                 return "Account deleted";
             }
         }
+
         else {
-            return "Incorrect Username or Password";
+            return "Username not found";
         }
     }
 
@@ -174,13 +188,13 @@ class organizationManagement {
             return false
         return true
     }
-    
-     //fetching verification data of user
-    async findVerificationData(userObj){
-        let userFind=await dao.find(this.VERIFY,{companyID: userObj.companyID})
+
+    //fetching verification data of user
+    async findVerificationData(userObj) {
+        let userFind = await dao.find(this.VERIFY, { companyID: userObj.companyID })
         return userFind;
     }
-    
+
 
 
 }

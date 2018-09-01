@@ -225,6 +225,13 @@ app.patch('/rest-api/user/update-password', async (req, res) => {
         res.send(result)
     }
 })
+
+
+ //verification link for log in verification 
+ app.post('/rest-api/user/verify', async (req, res) => {
+    let verficationData = await user.findVerificationData(req.body);
+       res.send(verficationData);
+   })
 /****************************org**************************/
 //method on clicking loginIn
 /**
@@ -278,6 +285,10 @@ app.patch('/rest-api/orgs/update-password', async (req, res) => {
     }
 })
 
+app.post('/rest-api/orgs/verify', async (req, res) => {
+    let verficationData = await orgs.findVerificationData(req.body);
+       res.send(verficationData);
+   })
 
 /**
  * @author Nandkumar
