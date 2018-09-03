@@ -15,7 +15,7 @@ class userManagement {
      */
     constructor() {
         this.USERS = 'users',
-            this.FORGET = 'forget-password'
+        this.FORGET = 'forget-password'
         this.AUTH = 'auth-users'
         this.VERIFY = 'verifications'
     }
@@ -140,16 +140,47 @@ class userManagement {
      * @param {Object} userObj having userDetails
      * @returns {Object} Database Result or Error
      */
-    async signin(obj) {
-        console.log("Hello")
-        let log = await dao.find(this.USERS, { userName: obj.userName })
-        console.log(log)
+    // async signin(obj) {
+    //     console.log("Hello")
+    //     let log = await dao.find(this.USERS, { userName: obj.userName })
+    //     console.log(log)
+    //     if (log.length == 1) {
+    //         if (log[0].isDeleted == false) {
+    //             let result = await dao.find(this.AUTH, { email: log[0].email })
+    //             if (result) {
+    //                 let hashPassword = utils.encryptPassword(obj.password)
+    //                 if (result[0].password == hashPassword) {
+    //                     return "logged In";
+    //                 }
+    //                 else {
+    //                     return "Incorrect Password";
+    //                 }
+    //             }
+    //             else {
+    //                 return "not verified";
+    //             }
+    //         }
+    //         else {
+    //             return "Account deleted";
+    //         }
+    //     }
+
+    //     else {
+    //         return "Username not found";
+    //     }
+    // }
+
+
+
+    async signin(req) {
+        let log = await dao.find(this.USERS, { userName: req.userName })
         if (log.length == 1) {
             if (log[0].isDeleted == false) {
                 let result = await dao.find(this.AUTH, { email: log[0].email })
-                if (result) {
-                    let hashPassword = utils.encryptPassword(obj.password)
-                    if (result[0].password == hashPassword) {
+                let hashPassword = utils.encryptPassword(req.password)
+                if (result[0].password == hashPassword) {
+                    if (log[0].isVerified == true) {
+
                         return "logged In";
                     }
                     else {
@@ -185,24 +216,36 @@ class userManagement {
                 catch (err) {
                     result = { error: err };
                 }
-                return result;
+                return link;
             }
             else {
                 return ("username not found");
             }
         }
     }
-    //change password
-    async changePassword(userName, verificationCode, password) {
-        let verified = await dao.find(this.FORGET, { verificationCode: verificationCode, userName: userName })
-        if (verified.length) {
-            let emailObj = await dao.find(this.USERS, { userName: verified[0].userName })
-            if (emailObj.length) {
-                let result = await this.updatePasswordUtil(emailObj[0].email, password)
-                let log = await dao.delete(this.FORGET, { verificationCode: verificationCode })
-                return (log);
-            }
+
+    //password link verification
+    async verifyPassword(req){
+        console.log(req.verificationCode);
+        let result=await dao.find(this.FORGET,{userName:req.userName});
+        if (result[0].verificationCode==req.verificationCode){
+        let log = await dao.delete(this.FORGET, { userName: req.userName });
+            return "done"
         }
+        else{
+            return "not"
+        }
+    }
+
+
+    //change password
+    async changePassword(req) {
+        console.log("hello");
+        let hashPassword = utils.encryptPassword(req.password)
+        let result = await dao.update(this.AUTH, { email: this.email }, { $set: { password: hashPassword } });
+        //let log = await dao.delete("pwdchangever", { userName: req.userName });
+        console.log("done");
+        return ("update done");
     }
 
     async updatePassword(userName, password) {

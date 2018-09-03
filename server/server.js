@@ -96,7 +96,7 @@ app.post('/rest-api/orgs/signup', async (req, res) => {
     let result = await orgs.signupInsert(req.body);
     let verifyUser = await orgs.verifyInsert(req.body);
     let verficationData = await orgs.findVerificationData(req.body);
-    res.send(verificationData)
+    res.send(verficationData)
 
 })
 //after activating the link
@@ -139,7 +139,7 @@ app.post('/rest/api/users/uniqueUserName', async (req, res) => {
 /**
  * @required @tested
  */
-app.post('/rest/api/orgs/uniqueUserName', async (req, res) => {
+app.post('/rest/api/orgs/uniqueCompanyID', async (req, res) => {
     //let isUniqueUser = await users.uniqueUserName(req.body.companyID);
     let isUniqueOrg = await orgs.uniqueUserName(req.body.companyID)
     res.send((isUniqueOrg));
@@ -199,10 +199,11 @@ app.post('/rest-api/user/forget-password', async (req, res) => {
 /**
  * @required @tested
  */
-app.patch('/rest-api/user/change-password/:userName/:verificationCode', async (req, res) => {
-    let result = await users.changePassword(req.params.userName, req.params.verificationCode,
-        req.body.password);
-    res.send(result)
+app.post('/rest/api/users/change-password', async (req, res) => {
+    //console.log("hello");
+    console.log(req.body);
+    let result = await users.changePassword(req.body);
+    res.send(result);
 })
 
 //method to change password for logged In user
@@ -214,10 +215,17 @@ app.patch('/rest-api/user/update-password', async (req, res) => {
     res.send(result)
 })
 
+//varification of password from link
+app.post('/rest/api/users/verification',async(req,res)=>{
+    console.log("hui")
+    let result=await users.verifyPassword(req.body);
+    res.send(result);
+})
+
 
 //verification link for log in verification 
 app.post('/rest-api/user/verify', async (req, res) => {
-    let verficationData = await user.findVerificationData(req.body);
+    let verficationData = await users.findVerificationData(req.body);
     res.send(verficationData);
 })
 /****************************org**************************/
@@ -872,7 +880,7 @@ app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => 
  * @required
  */
 app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => {
-        let result = await control.removePublications(req.body.userName, req.params.publicationId, req.body);
+        let result = await control.removePublications(req.body.userName, req.params.publicationId);
         result = await control.getUserByUserName(req.body.userName);
         res.send(result);
 });

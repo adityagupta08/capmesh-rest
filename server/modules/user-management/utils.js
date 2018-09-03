@@ -1,11 +1,9 @@
 const crypto = require('crypto')
-const sgMail = require('@sendgrid/mail')
 
 class Utils {
     constructor() {
         this._secret = '4a66f657d19b6a1d02df9ca6436091e94a3002e6bfd7a991e20c48220f8112c6'
         this.BASE_URL = process.env.BASE_URL
-        sgMail.setApiKey(process.env.SG_API_KEY)
     }
     
     encrypt(data) {
@@ -48,7 +46,6 @@ class Utils {
             text: text,
             html: html
         }
-        sgMail.send(msg)
     }
 }
 
