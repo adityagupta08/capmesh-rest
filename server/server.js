@@ -1277,7 +1277,6 @@ app.put('/rest-api/users/post/updateComments/:uName/:postId', async (req, res) =
         catch (err) {
             result = { err: err }
         }
-    }
 })
 
 
