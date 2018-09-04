@@ -694,7 +694,7 @@ const chats = new Chats();
  * @required
  */
 app.post('/rest-api/chats/addChatsBetweenUsers', async (req, res) => {
-        let previousConversationStatus = await chats.conversationExist(user, req.body.receiver);
+        let previousConversationStatus = await chats.conversationExist(req.body.userName, req.body.receiver);
         console.log(previousConversationStatus)
         if (previousConversationStatus) {
             let result = {
@@ -722,7 +722,7 @@ app.post('/rest-api/chats/addChatsBetweenUsers', async (req, res) => {
 app.post('/rest-api/chats/getchatsBetweenUsers', async (req, res) => {
 
         let result = {}
-        result.val = await chats.getChatsBetweenUsers(req.body.userName, req.body.user2)
+        result.val = await chats.getChatsBetweenUsers(req.body.userName, req.body.receiver)
         res.send(result)
 })
 
@@ -1114,7 +1114,7 @@ const comments = new Comment();
 /**
  * @required
  */
-app.get("/rest-api/users/post/load", async (req, res) => {
+app.post("/rest-api/users/post/load", async (req, res) => {
     //console.log('Load Invoked');
         let result = await newsFeed.getNewsFeed(newsFeedCollection, req.body.userName);//take username from session
         res.send(result)
@@ -1136,6 +1136,7 @@ app.patch('/rest-api/users/create/post', async (req, res) => {
     let result;
         try {
             result = await post.createPosts(newsFeedCollection, req.body, req.body.userName);
+            result = await newsFeed.getNewsFeed(newsFeedCollection, req.body.userName)
         }
         catch (err) {
             result = { err: err }
@@ -1154,6 +1155,7 @@ app.patch('/rest-api/users/edit/post/:postId', async (req, res) => {
     let postId = req.params.postId;
         try {
             result = await post.editPosts(newsFeedCollection, req.body, req.body.userName, postId);
+            result = await newsFeed.getNewsFeed(newsFeedCollection, req.body.userName);
         }
         catch (err) {
             result = { err: err }
@@ -1172,6 +1174,7 @@ app.patch('/rest-api/users/delete/posts/:postId', async (req, res) => {
     let postId = req.params.postId;
         try {
             result = await post.deletePosts(newsFeedCollection, req.body.userName, postId);
+    result = await newsFeed.getNewsFeed(newsFeedCollection, req.body.userName)
         }
         catch (err) {
             result = { err: err }
@@ -1259,11 +1262,15 @@ app.post('/rest-api/users/post/unike', async (req, res) => {
 /***
  * @Description calling getComments() method of Comments class in comments.js file 
  */
-app.get('/rest-api/users/post/getComments/:postId', async (req, res) => {
-    let pId = req.params.postId;
-    let result = await comments.getComments(newsFeedCollection, pId);
+app.get('/rest-api/users/post/getComments/:uname/:pid', async (req, res) => {
+    let pId = req.params.pid;
+    let username = req.params.uname;
+        //uname is userName like ="dip95",  whose post is displayed
+    //pid is Post Id 
+    let result = await comments.getComments(newsFeedCollection, username, pId);
     res.send(result);
 })
+
 
 
 
@@ -1273,18 +1280,22 @@ app.get('/rest-api/users/post/getComments/:postId', async (req, res) => {
  */
 app.use(parser.json());
 
-app.put('/rest-api/users/post/updateComments/:uName/:postId', async (req, res) => {
+app.put('/rest-api/users/post/updateComments/:uname/:pid', async (req, res) => {
     let result
-    let uName = req.params.uName
-    let postId = req.params['postId']
-        try {
-            let result = await comments.postComments(newsFeedCollection, uName, postId, req.body, req.body.userName)
-
-            res.send(result)
-        }
-        catch (err) {
-            result = { err: err }
-        }
+    let uId = req.params['uname'];
+    let pId = req.params['pid']
+    
+    //uname is userName like ="dip95",  whose post is displayed
+    //pid is Post Id 
+    try {
+        let result = await comments.postComments(newsFeedCollection, uId, pId, req.body,req.body.userName)
+                                      // take "saurabhgupta"" from session that is fullname of a session user
+        let updatedResult = await comments.getComments(newsFeedCollection, uId, pId);
+        res.send(updatedResult)
+    }
+    catch (err) {
+        result = { err: err }
+    }
 })
 
 
