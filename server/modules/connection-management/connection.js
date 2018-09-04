@@ -177,8 +177,8 @@ class Connections {
      * @param {object} queryData data to be passed in the query
      * @returns {number} result
      */
-    async invitationsSent(collections, queryData) {
-        let result = await dao.aggregate(collections, [{ $match: { userName: queryData.user } }, { $project: { sent: "$connectionRequests.sent" } }]);
+    async invitationsSent(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $project: { sent: "$connectionRequests.sent" } }]);
         return (result);
     }
 

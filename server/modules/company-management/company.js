@@ -38,12 +38,27 @@ class Company {
      * @param {object} queryData input data object
      * @returns {object} result
      */
-    async addJobPost(collection,companyId, queryData) {
+    async addJobPost(collection, queryData) {
         let date = new Date()
         let lastDate = new Date(queryData.lastDate)
         let id = crypto.randomBytes(16).toString("hex");
-        let result = await dao.update(collection, { "companyID": companyId }, { $push: { "profile.jobs": { "jobId": id, "position": queryData.jobPosition, "timestamp": date, "lastDate": lastDate, "applicants": [] } } });
+        let result = await dao.update(collection, { "companyID": queryData.companyId }, { $push: { "profile.jobs": { "jobId": id, "position": queryData.jobPosition, "timestamp": date, "lastDate": lastDate, "applicants": [] } } });
         return (result);
+    }
+
+      /**
+     * @description Removing job post details
+     * (companyId, jobId)
+     * @author Harshita
+     * @param {string} collection having collection name
+     * @param {object} queryData having query
+     * @returns {object} result
+     */        
+    async removeJobPost(collection, queryData) {
+        let result = await dao.update(collection, {'companyID': queryData.companyId}, { $pull: { "profile.jobs" : { "jobId": queryData.jobId }}});
+         console.log("Deleted");
+        // console.log(result);
+        return (result) ;
     }
 
     /**
@@ -69,10 +84,10 @@ class Company {
      * @param {object} queryData input data object
      * @returns {object} result
      */
-    async addPost(collection, companyId, queryData) {
+    async addPost(collection, queryData) {
         let id = crypto.randomBytes(16).toString("hex")
         let postDate = new Date()
-        let result = await dao.update(collection, { "companyID": companyId }, { $push: { "profile.post": { "postId": id, "content": queryData.content, "timestamp": postDate, likes: [], comments: [] } } });
+        let result = await dao.update(collection, { "companyID": queryData.companyId }, { $push: { "profile.post": { "postId": id, "content": queryData.content, "timestamp": postDate, likes: [], comments: [] } } });
         console.log(result)
         return (result);
     }

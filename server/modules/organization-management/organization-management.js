@@ -87,6 +87,18 @@ class organizationManagement {
         return userFind;
     }
 
+
+    async verifiyPassword(req) {
+        let result = await dao.find(this.ORG, { userName: req.userName });
+        if (result[0].verificationCode == req.VerificationCode) {
+            let log = await dao.delete(this.ORG, { userName: req.userName });
+            return "done"
+        }
+        else {
+            return "not"
+        }
+    }
+
     async updateVerifyCode(companyID) {
         let result
         let link = utils.generateVerificationCode();
@@ -104,9 +116,10 @@ class organizationManagement {
         if (log.length == 1) {
             if (log[0].isDeleted === false) {
                 let result = await dao.find(this.AUTH, { email: log[0].email })
-                if (result) {
-                    let hashPassword = utils.encryptPassword(req.password)
-                    if (result[0].password == hashPassword) {
+                let hashPassword = utils.encryptPassword(req.password)
+                if (result[0].password == hashPassword) {
+                    if (log[0].isVerified == true) {
+
                         return "logged In";
                     }
                     else {
@@ -141,7 +154,7 @@ class organizationManagement {
                 catch (err) {
                     result = { error: err };
                 }
-                return result;
+                return link;
             }
             else {
                 return ("username not found");
@@ -149,16 +162,12 @@ class organizationManagement {
         }
     }
 
-    async changePassword(userName, verificationCode, password) {
-        let verified = await dao.find(this.FORGET, { verificationCode: verificationCode, companyID: userName })
-        if (verified.length) {
-            let emailObj = await dao.find(this.ORG, { companyID: verified[0].companyID })
-            if (emailObj.length) {
-                let result = await this.updatePasswordUtil(emailObj[0].email, password)
-                let log = await dao.delete(this.FORGET, { verificationCode: verificationCode })
-                return (log);
-            }
-        }
+    async changePassword(req) {
+        console.log("hello");
+        let hashPassword = utils.encryptPassword(req.password)
+        let result = await dao.update(this.AUTH, { email: this.email }, { $set: { password: hashPassword } });
+        let log = await dao.delete(this.FORGET, { userName: req.userName })
+        return ("done");
     }
 
     async updatePassword(userName, password) {
