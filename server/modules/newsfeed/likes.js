@@ -46,14 +46,18 @@ class likes {
         return (result);
     }
 
-    /*async getLikesDetails(collections,id) {
-        let query = [{ $project: { "posts.postId": 1 ,"posts.likes": 1 } },{$unwind:"$posts"},{ $match:  [{ "posts.postId":id},{ "userName": userName }] }]
-        let result=await dao.aggregate(collections,query);
-        let count=result[0].posts.likes.length;
-        result.push({"count":count})
-        //console.log(result[1].count)
-        return (result);
-    }*/
+    async getLikeDetails(collections,userName,id) {
+        let query = [{ $match: {$and:[{"userName":userName},{ "posts.postId": id }]} }, { $project: {"posts.postId": 1, "posts.likes": 1,_id:0} }]
+            let result=await dao.aggregate(collections,query);
+          result=result[0].posts;
+            result=result.filter(t=>{
+                if(t.postId==id){
+                    return t;
+                }
+                else return 0;
+            })
+            return(result);
+         }
 }
 
 module.exports = likes

@@ -1237,7 +1237,7 @@ app.post('/rest-api/users/post/like', async (req, res) => {
 /**
  * @required
  */
-app.post('/rest-api/users/post/unike', async (req, res) => {
+app.post('/rest-api/users/post/unlike', async (req, res) => {
     let result
         try {
             var store = req.body;
@@ -1249,15 +1249,14 @@ app.post('/rest-api/users/post/unike', async (req, res) => {
         res.send(result)
 })
 
-// app.get('/rest-api/users/post/getLikesdetails/:postId', async (req, res) => {
-//     var id = req.params.postId
-//     let user = sessManager.getUserOrError401(req, res);
-//     if (user) {
-//         let result = await likes.getLikesDetails(connCollection, id)
-//         res.send(result)
-//     }
-// })
 
+
+app.get('/rest-api/users/post/getLikesdetails/:userName/:postId', async (req, res) => {
+    var id=req.params.postId
+    var userName=req.params.userName
+    let result = await likes.getLikeDetails(newsFeedCollection,userName,id)
+    res.send(result)
+})
 
 /***
  * @Description calling getComments() method of Comments class in comments.js file 
