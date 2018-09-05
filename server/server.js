@@ -790,7 +790,7 @@ app.get('/rest-api/users/get/:un', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call addAwards()"
-    @author :  Shrishti
+    @author :  Supriya Patil
 */
 /**
  * @required
@@ -803,7 +803,7 @@ app.put('/rest-api/users/addAward', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call updateAward()"
-    @author :  Shrishti
+    @author :  Supriya Patil
 */
 /**
  * @required
@@ -816,7 +816,7 @@ app.put('/rest-api/users/changeAward/:awardId', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call removeAwards()"
-    @author :  Parag Badala
+    @author :  Supriya Patil
 */
 /**
  * @required
@@ -829,7 +829,7 @@ app.put('/rest-api/users/removeAward/:awardId', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call addCertifications()"
-    @author :  Dipmalya Sen
+    @author :  Soumyodipta Majumdar
 */
 /**
  * @required
@@ -842,7 +842,7 @@ app.put('/rest-api/users/addCertificate', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call updateCertifications()"
-    @author :  Dipmalya Sen
+    @author :  Soumyodipta Majumdar
 */
 /**
  * @required
@@ -855,7 +855,7 @@ app.put('/rest-api/users/changeCertificate/:certificateId', async (req, res) => 
 
 /*
     @desc : "This link will get the user's name and user Id and will call removeCertifications()"
-    @author :  Himani Jain
+    @author :  Soumyodipta Majumdar
 */
 /**
  * @required
@@ -868,7 +868,8 @@ app.put('/rest-api/users/removeCertificate/:certificateId', async (req, res) => 
 
 /*
     @desc : "This link will get the user's name and will call addpublications()"
-    @author :  Himani Jain
+    @author :  Anubha Joshi
+    
 */
 /**
  * @required
@@ -881,7 +882,7 @@ app.put('/rest-api/users/addPublication', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call updatePublications()"
-    @author :  Lalithya Satya
+    @author :  Anubha Joshi
 */
 /**
  * @required
@@ -894,7 +895,7 @@ app.put('/rest-api/users/changePublication/:publicationId', async (req, res) => 
 
 /*
     @desc : "This link will get the user's name and user Id and will call removePublications()"
-    @author :  Lalithya Satya
+    @author :  Anubha Joshi
 */
 /**
  * @required
@@ -907,7 +908,7 @@ app.put('/rest-api/users/removePublication/:publicationId', async (req, res) => 
 
 /*
     @desc : "This link will get the user's name and will call addEndorsement()"
-    @author :  Soumyodipta Majumdar
+    @author :  Somya Burman
 */
 /**
  * @required
@@ -920,7 +921,7 @@ app.put('/rest-api/users/addEndorsement', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and skill and will call addSkill()"
-    @author :  Soumyodipta Majumdar
+    @author :  Veshnavee Gupta
 */
 /**
  * @required
@@ -934,7 +935,7 @@ app.put('/rest-api/users/addSkill/:skill', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and skill and will call deleteSkill()"
-    @author :  Somya Burman
+    @author :  Veshnavee Gupta
 */
 /**
  * @required
@@ -947,7 +948,7 @@ app.put('/rest-api/users/deleteSkill/:skill', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call updateBio()"
-    @author :  Somya Burman
+    @author :  parag Badala
 */
 /**
  * @required
@@ -960,7 +961,7 @@ app.put('/rest-api/users/updateBio', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call addExperience()"
-    @author :  Anubha Joshi
+    @author :  Himani Jain
 */
 /**
  * @required
@@ -973,7 +974,7 @@ app.put('/rest-api/users/addExperience', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call updateExperience()"
-    @author :  Anubha Joshi
+    @author :  Himani Jain
 */
 /**
  * @required
@@ -986,7 +987,7 @@ app.put('/rest-api/users/updateExperience/:experienceId', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call removeExperience()"
-    @author :  Veshnavee 
+    @author :  Himani Jain 
 */
 /**
  * @required
@@ -999,7 +1000,7 @@ app.put('/rest-api/users/removeExperience/:experienceId', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call addEducation()"
-    @author :  Veshnavee 
+    @author :  Lalithya Satya 
 */
 /**
  * @required
@@ -1012,7 +1013,7 @@ app.put('/rest-api/users/addEducation', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call updateEducation()"
-    @author :  Supriya Patil
+    @author :  Lalithya Satya
 */
 /**
  * @required
@@ -1025,7 +1026,7 @@ app.put('/rest-api/users/updateEducation/:educationId', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and user Id and will call removeEducation()"
-    @author :  Supriya Patil
+    @author :  Lalithya Satya
 */
 /**
  * @required
@@ -1038,7 +1039,7 @@ app.put('/rest-api/users/removeEducation/:educationId', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call countConnection()"
-    @author :  Parag Badala
+    @author :  Supriya Patil
 */
 
 app.get('/rest-api/users/countConnection', async (req, res) => {
@@ -1048,7 +1049,7 @@ app.get('/rest-api/users/countConnection', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call updateName()"
-    @author :  Somya Burman
+    @author :  Shrishti
 */
 /**
  * @required
@@ -1061,7 +1062,7 @@ app.put('/rest-api/users/updateName', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call updateDOB()"
-    @author :  Parag Badala
+    @author :  Shrishti
 */
 
 /**
@@ -1075,7 +1076,7 @@ app.put('/rest-api/users/updateDob', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call upateEmail()"
-    @author :  Parag Badala
+    @author :  Anubha Joshi
 */
 
 app.put('/rest-api/users/updateEmail', async (req, res) => {
@@ -1086,7 +1087,7 @@ app.put('/rest-api/users/updateEmail', async (req, res) => {
 
 /*
     @desc : "This link will get the user's name and will call updateMobile()"
-    @author :  Parag Badala
+    @author :  Anubha Joshi
 */
 /**
  * @required
