@@ -115,13 +115,13 @@ class Company {
      * @param {object} queryData having query
      * @returns {object} result
      */
-    async applicantList(collection, companyId, queryData) {
-        let result = await dao.aggregate(collection, [{ $match: { "companyID": companyId } }, { $project: { "profile.jobs": 1, "_id": 0 } }]);
+    async applicantList(collection, queryData) {
+        let result = await dao.aggregate(collection, [{ $match: { "companyID": queryData.companyId } }, { $project: { "profile.jobs": 1, "_id": 0 } }]);
         for (let job of result[0].profile.jobs) {
             if (job.jobId === queryData.jobId)
                 return job.applicants;
         }
-        return ({ err: "No such job found" });
+        return ({ err: "No Applicants" });
     }
 
     /**
@@ -132,14 +132,14 @@ class Company {
      * @param {object} queryData having query
      * @returns {object} result
      */
-    async getApplicantCount(collection, companyId, queryData) {
-        let result = await dao.aggregate(collection, [{ $match: { "companyID": companyId } }, { $project: { "profile.jobs": 1, "_id": 0 } }]);
+    async getApplicantCount(collection, queryData) {
+        let result = await dao.aggregate(collection, [{ $match: { "companyID": queryData.companyId } }, { $project: { "profile.jobs": 1, "_id": 0 } }]);
         console.log(result[0].profile.jobs);
         for (let job of result[0].profile.jobs) {
             if (job.jobId === queryData.jobId)
                 return ({ "length": job.applicants.length });
         }
-        return ({ err: "No applicants" });
+        return ({ err: "0" });
     }
 
     /**

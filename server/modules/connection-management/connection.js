@@ -68,6 +68,16 @@ class Connections {
         return (result);
     }
 
+    async getBlockList(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $project: { blocked: "$blocklist.blocked" } }]);
+        return (result);
+    }
+
+    async blockListCount(collections, user) {
+        let result = await dao.aggregate(collections, [{ $match: { userName: user } }, { $group: { _id: "$userName", count: { $sum: { $size: "$blocklist.blocked" } } } }]);
+        return (result[0].count.toString());
+    }
+
     /**
      * Description - Accepting connection request
      * (user - requester)

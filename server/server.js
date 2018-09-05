@@ -386,6 +386,34 @@ app.post('/rest-api/user/block', async (req, res) => {
         res.end(JSON.stringify({ "error": err }));/*Modified*/
     }
 })
+/*
+
+
+*/
+app.post('/rest-api/user/get-block-list', async (req, res) => {
+    try {
+        let result = await connection.getBlockList(connCollection, req.body.user);
+        var blockData = [];
+        for (let s of result[0].blocked) {
+
+            blockData.push(await connection.getNameAndImage(connCollection, s))
+        }
+        res.end(JSON.stringify(blockData));
+    }
+    catch (err) {
+                res.end(JSON.stringify({"error":err}));/*Modified*/
+    }
+})
+
+app.post('/rest-api/user/block-list-count', async (req, res) => {
+    try {
+        let result = await connection.blockListCount(connCollection, req.body.user);
+        res.end(JSON.stringify(result));
+    }
+    catch (err) {
+                res.end(JSON.stringify({"error":err}));/*Modified*/
+    }
+})
 
 
 /**
@@ -653,7 +681,7 @@ app.post('/rest-api/user/orgs/like-post', async (req, res) => {
  *  (companyId, jobId)
  */
 app.post('/rest-api/orgs/applicant-list', async (req, res) => {
-    let result = await company.applicantList(orgCollection, req.body.userName, req.body);
+    let result = await company.applicantList(orgCollection, req.body);
     res.send(result);
 })
 
@@ -665,7 +693,7 @@ app.post('/rest-api/orgs/applicant-list', async (req, res) => {
 app.post('/rest-api/orgs/applicant-count', async (req, res) => {
     let result;
     try {
-        result = await company.getApplicantCount(orgCollection, req.body.userName, req.body)
+        result = await company.getApplicantCount(orgCollection, req.body)
     }
     catch (err) {
         result = { err: err }
