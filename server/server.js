@@ -401,7 +401,7 @@ app.post('/rest-api/user/get-block-list', async (req, res) => {
         res.end(JSON.stringify(blockData));
     }
     catch (err) {
-                res.end(JSON.stringify({"error":err}));/*Modified*/
+        res.end(JSON.stringify({ "error": err }));/*Modified*/
     }
 })
 
@@ -411,7 +411,7 @@ app.post('/rest-api/user/block-list-count', async (req, res) => {
         res.end(JSON.stringify(result));
     }
     catch (err) {
-                res.end(JSON.stringify({"error":err}));/*Modified*/
+        res.end(JSON.stringify({ "error": err }));/*Modified*/
     }
 })
 
@@ -612,7 +612,7 @@ app.post('/rest-api/user/orgs/getJob', async (req, res) => {
 app.post('/rest-api/orgs/postJob', async (req, res) => {
     let result;
     try {
-        result = await company.addJobPost(orgCollection,  req.body);
+        result = await company.addJobPost(orgCollection, req.body);
     }
     catch (err) {
         result = { "err": err };
@@ -1238,15 +1238,19 @@ app.patch('/rest-api/users/delete/posts/:postId', async (req, res) => {
  * @required
  */
 app.patch('/rest-api/users/search/people', async (req, res) => {
-    let result;
+    console.log(req.body)
+    let result = []
+    let result2 = []
     try {
         result = await search.searchPeople(newsFeedCollection, req.body.query);
         result2 = await search.searchCompanies(orgCollection, req.body.query);
+       result = result.concat(result2)
     }
     catch (err) {
         result = { err: err }
     }
-    res.send(result.concat(result2))
+
+    res.send(result)
 })
 
 /**

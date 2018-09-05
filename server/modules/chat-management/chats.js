@@ -129,7 +129,6 @@ class Chats {
                 }
                 return temp;
             })
-            console.log(result);
         }
         catch (err) {
             result = { error: err }

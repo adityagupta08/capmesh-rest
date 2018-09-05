@@ -22,10 +22,12 @@ class Search {
      * @param {string} query
      * @returns {Object} result 
      */
-    async searchCompanies(query) {
+    async searchCompanies(collections,query) {
+        //console.log('sfsf')
         var filter = { $match: { "name": new RegExp(`^${query}`, 'i') } }
-        var project = { $project: { "_id": 0, "companyID": 1, "name": 1, "areaOfWork": 1, "profile.image":1 } }
+        var project = { $project: { "_id": 0, "companyID": 1, "name": 1, "areaOfWork": 1 } }
         let result = await dao.aggregate(collections, [filter, project]);
+//console.log('asdfsaf')
         return (result);
     }
 
