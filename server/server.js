@@ -1240,11 +1240,12 @@ app.patch('/rest-api/users/search/people', async (req, res) => {
     let result;
     try {
         result = await search.searchPeople(newsFeedCollection, req.body.query);
+        result2 = await search.searchCompanies(orgCollection, req.body.query);
     }
     catch (err) {
         result = { err: err }
     }
-    res.send(result)
+    res.send(result.concat(result2))
 })
 
 /**
