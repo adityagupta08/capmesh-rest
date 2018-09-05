@@ -224,7 +224,7 @@ class Controller {
 
     /*
         @desc "This function will update bio(according to user requirement) passed to the user's profile.. When we click on add bio() then, the entered details will be added to the user's profile"
-        @author : Dipmalya Sen
+        @author : Parag Badala
         @param : {string} user name, {object} bio
         @return : db update response
     */
